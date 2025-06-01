@@ -6,13 +6,13 @@ using System.Text;
 
 namespace Asana.Library.Models
 {
-    public class ToDo
+    public class Project
     {
         public int Id { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public int Priority { get; set; }
-        public bool IsComplete { get; set; }
-        public int ProjectId { get; set; }
+        public int CompletePercent { get; set; }
+        public List<ToDo> ToDos { get; set; } = new List<ToDo>();
     }
 }
+
