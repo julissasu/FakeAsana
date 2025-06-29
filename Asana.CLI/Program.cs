@@ -159,6 +159,7 @@ namespace Asana
                                 CompletePercent = 0,
                                 ToDos = new List<ToDo>()
                             });
+                            Console.WriteLine($"Project created with ID {nextProjectId - 1}.");
                             break;
 
                         case 6:
@@ -168,8 +169,13 @@ namespace Asana
                             var projectDelete = projects.FirstOrDefault(p => p.Id == deleteProjId); // find Project by ID
                             if (projectDelete != null)
                             {
+                                // unassign all ToDos from this project
+                                foreach (var todo in projectDelete.ToDos)
+                                {
+                                    todo.ProjectId = null;
+                                }
                                 projects.Remove(projectDelete);
-                                Console.WriteLine($"Project with ID {deleteProjId} deleted.");
+                                Console.WriteLine($"Project with ID {deleteProjId} deleted. Associated ToDos unassigned.");
                             }
                             else
                             {
@@ -184,14 +190,17 @@ namespace Asana
                             var projectUpdate = projects.FirstOrDefault(p => p.Id == updateProjId); // find Project by ID
                             if (projectUpdate != null)
                             {
-                                // prompt user for new values
-                                Console.Write("New Name: ");
-                                projectUpdate.Name = Console.ReadLine();
-                                Console.Write("New Description: ");
-                                projectUpdate.Description = Console.ReadLine();
-                                Console.Write("New Complete Percent: ");
-                                int.TryParse(Console.ReadLine(), out int newCompletePercent);
-                                projectUpdate.CompletePercent = newCompletePercent;
+                                // prompt user for new values (allow keeping existing values)
+                                Console.Write($"New Name (current: '{projectUpdate.Name}', press Enter to keep): ");
+                                var newProjName = Console.ReadLine();
+                                if (!string.IsNullOrWhiteSpace(newProjName))
+                                    projectUpdate.Name = newProjName;
+
+                                Console.Write($"New Description (current: '{projectUpdate.Description}', press Enter to keep): ");
+                                var newProjDescription = Console.ReadLine();
+                                if (!string.IsNullOrWhiteSpace(newProjDescription))
+                                    projectUpdate.Description = newProjDescription;
+
                                 Console.WriteLine($"Project with ID {updateProjId} updated.");
                             }
                             else
@@ -203,12 +212,19 @@ namespace Asana
                         case 8:
                             // list all Projects
                             Console.WriteLine("All Projects:");
-                            foreach (var p in projects)
+                            if (projects.Count == 0)
                             {
-                                // calculate completion percentage for each project
-                                double completed = p.ToDos.Count > 0 ? p.ToDos.Count(td => td.IsComplete) * 100.0 / p.ToDos.Count : 0;
-                                // display project details
-                                Console.WriteLine($"[{p.Id}] {p.Name} - {p.Description} - Complete: {completed:F1}%");
+                                Console.WriteLine("No projects found.");
+                            }
+                            else
+                            {
+                                foreach (var p in projects)
+                                {
+                                    // calculate completion percentage for each project
+                                    double completed = p.ToDos.Count > 0 ? p.ToDos.Count(td => td.IsComplete) * 100.0 / p.ToDos.Count : 0;
+                                    // display project details
+                                    Console.WriteLine($"[{p.Id}] {p.Name} - {p.Description} - Complete: {completed:F1}% ({p.ToDos.Count(td => td.IsComplete)}/{p.ToDos.Count} tasks)");
+                                }
                             }
                             break;
 
