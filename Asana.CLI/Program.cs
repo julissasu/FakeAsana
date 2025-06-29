@@ -76,12 +76,14 @@ namespace Asana
                                 {
                                     newToDo.ProjectId = proj.Id;
                                     proj.ToDos.Add(newToDo);
+                                    Console.WriteLine($"ToDo assigned to project '{proj.Name}'.");
                                 }
                                 else
                                 {
                                     Console.WriteLine("Project not found. ToDo created without project.");
                                 }
                             }
+                            Console.WriteLine($"ToDo created with ID {newToDo.Id}.");
                             break;
 
                         case 2:
@@ -94,6 +96,7 @@ namespace Asana
                                 toDos.Remove(toDoDelete); // remove ToDo from the list
                                 var proj = projects.FirstOrDefault(p => p.Id == toDoDelete.ProjectId); // find the project by ToDo's ProjectId
                                 proj?.ToDos.Remove(toDoDelete); // remove ToDo from the project if it exists
+
                                 Console.WriteLine($"ToDo with ID {deleteId} deleted.");
                             }
                             else
@@ -103,24 +106,16 @@ namespace Asana
                             break;
 
                         case 3:
-                            // update an existing ToDo
-                            Console.Write("Enter ToDo Id to update: ");
+                            // update an existing ToDo - will toggle completion status
+                            Console.Write("Enter ToDo ID to update completion status: ");
                             int.TryParse(Console.ReadLine(), out int updateId);
                             var toDoUpdate = toDos.FirstOrDefault(t => t.Id == updateId); // find ToDo by ID
                             if (toDoUpdate != null)
                             {
-                                // prompt user for new values
-                                Console.Write("New Name: ");
-                                toDoUpdate.Name = Console.ReadLine();
-                                Console.Write("New Description: ");
-                                toDoUpdate.Description = Console.ReadLine();
-                                Console.Write("New Priority: ");
-                                int.TryParse(Console.ReadLine(), out int newPriority);
-                                toDoUpdate.Priority = newPriority;
-                                Console.Write("Is Complete? (true/false): ");
-                                bool.TryParse(Console.ReadLine(), out bool isComplete);
-                                toDoUpdate.IsComplete = isComplete;
-                                Console.WriteLine($"ToDo with ID {updateId} updated.");
+                                // toggle completion status
+                                toDoUpdate.IsComplete = !toDoUpdate.IsComplete;
+                                string status = toDoUpdate.IsComplete ? "completed" : "incomplete";
+                                Console.WriteLine($"ToDo with ID {updateId} marked as {status}.");
                             }
                             else
                             {
@@ -131,10 +126,21 @@ namespace Asana
                         case 4:
                             // list all ToDos
                             Console.WriteLine("All ToDos:");
-                            foreach (var t in toDos)
+                            if (toDos.Count == 0)
                             {
-                                // display ToDo details
-                                Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Complete: {t.IsComplete}");
+                                Console.WriteLine("No ToDos found.");
+                            }
+                            else
+                            {
+                                foreach (var t in toDos)
+                                {
+                                    var projectInfo = t.ProjectId.HasValue
+                                        ? $" (Project ID: {t.ProjectId})"
+                                        : " (No Project)";
+
+                                    // display ToDo details
+                                    Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Complete: {t.IsComplete}{projectInfo}");
+                                }
                             }
                             break;
 
