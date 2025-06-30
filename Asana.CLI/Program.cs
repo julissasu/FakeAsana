@@ -10,14 +10,6 @@ namespace Asana
     {
         public static void Main(string[] args)
         {
-            // initialize lists for ToDos and Projects
-            var toDos = new List<ToDo>();
-            var projects = new List<Project>();
-
-            // initialize IDs for ToDos and Projects
-            int nextToDoId = 1;
-            int nextProjectId = 1;
-
             int choiceInt; // variable to hold user choice
 
             do
@@ -47,31 +39,31 @@ namespace Asana
                             break;
 
                         case 1:
-                            ToDoServiceProxy.CreateToDo(toDos, projects, ref nextToDoId);
+                            ToDoServiceProxy.CreateToDo();
                             break;
                         case 2:
-                            ToDoServiceProxy.DeleteToDo(toDos, projects);
+                            ToDoServiceProxy.DeleteToDo();
                             break;
                         case 3:
-                            ToDoServiceProxy.UpdateToDo(toDos, projects);
+                            ToDoServiceProxy.UpdateToDo();
                             break;
                         case 4:
-                            ToDoServiceProxy.DisplayAllToDos(toDos);
+                            ToDoServiceProxy.DisplayAllToDos();
                             break;
                         case 5:
-                            ToDoServiceProxy.CreateProject(projects, ref nextProjectId);
+                            ToDoServiceProxy.CreateProject();
                             break;
                         case 6:
-                            ToDoServiceProxy.DeleteProject(projects);
+                            ToDoServiceProxy.DeleteProject();
                             break;
                         case 7:
-                            ToDoServiceProxy.UpdateProject(projects);
+                            ToDoServiceProxy.UpdateProject();
                             break;
                         case 8:
-                            ToDoServiceProxy.DisplayAllProjects(projects);
+                            ToDoServiceProxy.DisplayAllProjects();
                             break;
                         case 9:
-                            ToDoServiceProxy.DisplayToDosByProject(projects);
+                            ToDoServiceProxy.DisplayToDosByProject();
                             break;
 
                         default:

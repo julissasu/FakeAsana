@@ -9,28 +9,16 @@ namespace Asana.Library.Services
 {
     public static class ToDoServiceProxy
     {
-        // function to delete a ToDo
-        public static void DeleteToDo(List<ToDo> toDos, List<Project> projects)
-        {
-            Console.Write("Enter ToDo ID to delete: ");
-            int.TryParse(Console.ReadLine(), out int deleteId);
-            var toDoDelete = toDos.FirstOrDefault(t => t.Id == deleteId);   // find ToDo by ID
-            if (toDoDelete != null)
-            {
-                toDos.Remove(toDoDelete);   // remove ToDo from the list
-                var proj = projects.FirstOrDefault(p => p.Id == toDoDelete.ProjectId);  // find the project by ToDo's ProjectId
-                proj?.ToDos.Remove(toDoDelete); // remove ToDo from the project if it exists
+        // static data storage
+        public static List<ToDo> toDos = new List<ToDo>();
+        public static List<Project> projects = new List<Project>();
 
-                Console.WriteLine($"ToDo with ID {deleteId} deleted.");
-            }
-            else
-            {
-                Console.WriteLine($"ToDo with ID {deleteId} not found");
-            }
-        }
+        // static IDs for ToDos and Projects
+        public static int nextToDoId = 1;
+        public static int nextProjectId = 1;
 
         // function to create a new ToDo
-        public static void CreateToDo(List<ToDo> toDos, List<Project> projects, ref int nextToDoId)
+        public static void CreateToDo()
         {
             // prompt user for ToDo details
             Console.Write("Name: ");
@@ -87,8 +75,28 @@ namespace Asana.Library.Services
             Console.WriteLine($"ToDo created with ID {newToDo.Id}.");
         }
 
+        // function to delete a ToDo
+        public static void DeleteToDo()
+        {
+            Console.Write("Enter ToDo ID to delete: ");
+            int.TryParse(Console.ReadLine(), out int deleteId);
+            var toDoDelete = toDos.FirstOrDefault(t => t.Id == deleteId);   // find ToDo by ID
+            if (toDoDelete != null)
+            {
+                toDos.Remove(toDoDelete);   // remove ToDo from the list
+                var proj = projects.FirstOrDefault(p => p.Id == toDoDelete.ProjectId);  // find the project by ToDo's ProjectId
+                proj?.ToDos.Remove(toDoDelete); // remove ToDo from the project if it exists
+
+                Console.WriteLine($"ToDo with ID {deleteId} deleted.");
+            }
+            else
+            {
+                Console.WriteLine($"ToDo with ID {deleteId} not found");
+            }
+        }
+
         // function to update a ToDo (completion or project assignment)
-        public static void UpdateToDo(List<ToDo> toDos, List<Project> projects)
+        public static void UpdateToDo()
         {
             Console.Write("Enter ToDo Id to update: ");
             int.TryParse(Console.ReadLine(), out int updateId);
@@ -174,7 +182,7 @@ namespace Asana.Library.Services
         }
 
         // function to display all ToDos
-        public static void DisplayAllToDos(List<ToDo> toDos)
+        public static void DisplayAllToDos()
         {
             Console.WriteLine("All ToDos:");
             if (toDos.Count == 0)
@@ -195,7 +203,7 @@ namespace Asana.Library.Services
         }
 
         // function to create a new Project
-        public static void CreateProject(List<Project> projects, ref int nextProjectId)
+        public static void CreateProject()
         {
             // prompt user for Project details
             Console.Write("Project Name: ");
@@ -223,7 +231,7 @@ namespace Asana.Library.Services
         }
 
         // function to delete an existing Project
-        public static void DeleteProject(List<Project> projects)
+        public static void DeleteProject()
         {
             Console.Write("Enter Project ID to delete: ");
             int.TryParse(Console.ReadLine(), out int deleteProjId);
@@ -245,7 +253,7 @@ namespace Asana.Library.Services
         }
 
         // function to update an existing Project
-        public static void UpdateProject(List<Project> projects)
+        public static void UpdateProject()
         {
             Console.Write("Enter Project ID to update: ");
             int.TryParse(Console.ReadLine(), out int updateProjId);
@@ -272,7 +280,7 @@ namespace Asana.Library.Services
         }
 
         // function to list all Projects
-        public static void DisplayAllProjects(List<Project> projects)
+        public static void DisplayAllProjects()
         {
             Console.WriteLine("All Projects:");
             if (projects.Count == 0)
@@ -292,7 +300,7 @@ namespace Asana.Library.Services
         }
 
         // function to list all ToDos in a given Project
-        public static void DisplayToDosByProject(List<Project> projects)
+        public static void DisplayToDosByProject()
         {
             Console.Write("Enter Project ID to view its ToDos: ");
             int.TryParse(Console.ReadLine(), out int pidToView);
