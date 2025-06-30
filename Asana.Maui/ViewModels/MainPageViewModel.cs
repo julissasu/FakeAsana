@@ -37,6 +37,13 @@ namespace Asana.Maui.ViewModels
             set => SetProperty(ref _newToDoPriority, value);
         }
 
+        private DateTime _newToDoDueDate = DateTime.Now.AddDays(7);
+        public DateTime NewToDoDueDate
+        {
+            get => _newToDoDueDate;
+            set => SetProperty(ref _newToDoDueDate, value);
+        }
+
         // Properties for new Project creation
         private string _newProjectName = string.Empty;
         public string NewProjectName
@@ -66,6 +73,9 @@ namespace Asana.Maui.ViewModels
             get => _selectedProject;
             set => SetProperty(ref _selectedProject, value);
         }
+
+        // For Picker - Priority options
+        public List<int> PriorityOptions { get; } = new List<int> { 1, 2, 3 };
 
         // Commands
         public ICommand AddToDoCommand { get; }
@@ -110,6 +120,7 @@ namespace Asana.Maui.ViewModels
                 Name = NewToDoName,
                 Description = NewToDoDescription,
                 Priority = NewToDoPriority,
+                DueDate = NewToDoDueDate,
                 IsComplete = false
             };
 
@@ -120,6 +131,7 @@ namespace Asana.Maui.ViewModels
                 NewToDoName = string.Empty;
                 NewToDoDescription = string.Empty;
                 NewToDoPriority = 1;
+                NewToDoDueDate = DateTime.Now.AddDays(7);
 
                 // Refresh data to show new ToDo
                 RefreshData();
@@ -204,6 +216,10 @@ namespace Asana.Maui.ViewModels
             {
                 Projects.Add(project);
             }
+
+            // Update command states
+            ((Command)AddToDoCommand).ChangeCanExecute();
+            ((Command)AddProjectCommand).ChangeCanExecute();
         }
 
         // Helper method to get ToDos for a specific project

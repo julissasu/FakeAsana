@@ -14,5 +14,6 @@ namespace Asana.Library.Models
         public int Priority { get; set; }
         public bool IsComplete { get; set; }
         public int? ProjectId { get; set; }
+        public DateTime DueDate { get; set; } = DateTime.Now.AddDays(7); // Default to 7 days from now
     }
 }
