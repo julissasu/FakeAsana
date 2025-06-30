@@ -49,10 +49,22 @@ namespace Asana
                             // create a new ToDo
                             Console.Write("Name: ");
                             var name = Console.ReadLine();
+                            if (string.IsNullOrWhiteSpace(name))
+                            {
+                                Console.WriteLine("Name cannot be empty. ToDo not created.");
+                                break; // skip creation if name is empty
+                            }
+
                             Console.Write("Description: ");
                             var description = Console.ReadLine();
+
                             Console.Write("Priority (1-5): ");
                             int.TryParse(Console.ReadLine(), out int priority);
+                            if (priority < 1 || priority > 5)
+                            {
+                                Console.WriteLine("Priority must be between 1-5. Setting to default 3.");
+                                priority = 3; // default priority if invalid
+                            }
 
                             var newToDo = new ToDo
                             {
@@ -65,22 +77,25 @@ namespace Asana
 
                             toDos.Add(newToDo); // add new ToDo to the list
 
-                            // add ToDo to a project if it exists
-                            Console.Write("Assign to Project ID (or leave empty): ");
-                            var projInput = Console.ReadLine();
-                            if (int.TryParse(projInput, out int projId))
+                            if (projects.Count > 0)
                             {
-                                // find the project by ID
-                                var proj = projects.FirstOrDefault(p => p.Id == projId);
-                                if (proj != null)
+                                // add ToDo to a project if it exists
+                                Console.Write("Assign to Project ID (or leave empty): ");
+                                var projInput = Console.ReadLine();
+                                if (int.TryParse(projInput, out int projId))
                                 {
-                                    newToDo.ProjectId = proj.Id;
-                                    proj.ToDos.Add(newToDo);
-                                    Console.WriteLine($"ToDo assigned to project '{proj.Name}'.");
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Project not found. ToDo created without project.");
+                                    // find the project by ID
+                                    var proj = projects.FirstOrDefault(p => p.Id == projId);
+                                    if (proj != null)
+                                    {
+                                        newToDo.ProjectId = proj.Id;
+                                        proj.ToDos.Add(newToDo);
+                                        Console.WriteLine($"ToDo assigned to project '{proj.Name}'.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Project not found. ToDo created without project.");
+                                    }
                                 }
                             }
                             Console.WriteLine($"ToDo created with ID {newToDo.Id}.");
@@ -215,18 +230,25 @@ namespace Asana
                             // create a new Project
                             Console.Write("Project Name: ");
                             var projName = Console.ReadLine();
+                            if (string.IsNullOrWhiteSpace(projName))
+                            {
+                                Console.WriteLine("Project name cannot be empty. Project not created.");
+                                break; // skip creation if name is empty
+                            }
+
                             Console.Write("Project Description: ");
                             var projDescription = Console.ReadLine();
 
-                            projects.Add(new Project
+                            var newProject = new Project
                             {
                                 Id = nextProjectId++,
                                 Name = projName,
                                 Description = projDescription,
                                 CompletePercent = 0,
                                 ToDos = new List<ToDo>()
-                            });
-                            Console.WriteLine($"Project created with ID {nextProjectId - 1}.");
+                            };
+                            projects.Add(newProject);   // add new Project to the list
+                            Console.WriteLine($"Project created with ID {newProject.Id}.");
                             break;
 
                         case 6:
