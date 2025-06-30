@@ -106,16 +106,83 @@ namespace Asana
                             break;
 
                         case 3:
-                            // update an existing ToDo - will toggle completion status
-                            Console.Write("Enter ToDo ID to update completion status: ");
+                            // update a ToDo (completion or project assignment)
+                            Console.Write("Enter ToDo Id to update: ");
                             int.TryParse(Console.ReadLine(), out int updateId);
                             var toDoUpdate = toDos.FirstOrDefault(t => t.Id == updateId); // find ToDo by ID
                             if (toDoUpdate != null)
                             {
-                                // toggle completion status
-                                toDoUpdate.IsComplete = !toDoUpdate.IsComplete;
-                                string status = toDoUpdate.IsComplete ? "completed" : "incomplete";
-                                Console.WriteLine($"ToDo with ID {updateId} marked as {status}.");
+                                Console.WriteLine($"Updating ToDo: '{toDoUpdate.Name}'");
+                                Console.WriteLine("What would you like to update?");
+                                Console.WriteLine("1. Toggle completion status");
+                                Console.WriteLine("2. Change project assignment");
+                                Console.Write("Enter choice (1 or 2): ");
+
+                                var updateChoice = Console.ReadLine();
+
+                                if (updateChoice == "1")
+                                {
+                                    // toggle completion status
+                                    toDoUpdate.IsComplete = !toDoUpdate.IsComplete;
+                                    string status = toDoUpdate.IsComplete ? "completed" : "incomplete";
+                                    Console.WriteLine($"ToDo '{toDoUpdate.Name}' marked as {status}.");
+                                }
+                                else if (updateChoice == "2")
+                                {
+                                    // change project assignment
+                                    var currentProject = projects.FirstOrDefault(p => p.Id == toDoUpdate.ProjectId);
+                                    Console.WriteLine($"Current project: {(currentProject?.Name ?? "None")}");
+
+                                    if (projects.Count == 0)
+                                    {
+                                        Console.WriteLine("No projects available. Create a project first.");
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Available projects:");
+                                        foreach (var p in projects)
+                                        {
+                                            Console.WriteLine($"  [{p.Id}] {p.Name}");
+                                        }
+                                        Console.Write("Enter Project ID to assign (or 0 to unassign): ");
+
+                                        if (int.TryParse(Console.ReadLine(), out int newProjectId))
+                                        {
+                                            if (newProjectId == 0)
+                                            {
+                                                // unassign from project
+                                                currentProject?.ToDos.Remove(toDoUpdate);
+                                                toDoUpdate.ProjectId = null;
+                                                Console.WriteLine($"ToDo '{toDoUpdate.Name}' unassigned from all projects.");
+                                            }
+                                            else
+                                            {
+                                                var newProject = projects.FirstOrDefault(p => p.Id == newProjectId);
+                                                if (newProject != null)
+                                                {
+                                                    // remove from current project if assigned
+                                                    currentProject?.ToDos.Remove(toDoUpdate);
+                                                    // add to new project
+                                                    newProject.ToDos.Add(toDoUpdate);
+                                                    toDoUpdate.ProjectId = newProjectId;
+                                                    Console.WriteLine($"ToDo '{toDoUpdate.Name}' assigned to project '{newProject.Name}'.");
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("Project not found. Assignment unchanged.");
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Invalid input. Assignment unchanged.");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Invalid choice. No changes made.");
+                                }
                             }
                             else
                             {
@@ -236,14 +303,22 @@ namespace Asana
                             if (projectToView != null)
                             {
                                 Console.WriteLine($"ToDos for project '{projectToView.Name}':");
-                                // display ToDos for the project
-                                foreach (var t in projectToView.ToDos)
+                                if (projectToView.ToDos.Count == 0)
                                 {
-                                    Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} - Complete: {t.IsComplete}");
+                                    Console.WriteLine("No ToDos assigned to this project.");
+                                }
+                                else
+                                {
+                                    // display ToDos for the project
+                                    foreach (var t in projectToView.ToDos)
+                                    {
+                                        Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Complete: {t.IsComplete}");
+                                    }
                                 }
                             }
                             else Console.WriteLine("Project not found.");
                             break;
+
                         default:
                             // handle invalid choice
                             Console.WriteLine("Invalid choice, please try again.");
