@@ -1,86 +1,212 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="Asana.Maui.MainPage"
-             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             Title="Asana ToDo App">
+             x:Class="Asana.Maui.MainPage"
+             Title="Task Manager">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="10"
+        <VerticalStackLayout Spacing="20"
                              Padding="20">
 
-            <!-- Add ToDo Section -->
-            <Label Text="Add New ToDo"
-                   FontSize="18"
-                   FontAttributes="Bold"/>
-            <Entry Text="{Binding NewToDoName}"
-                   Placeholder="ToDo Name"/>
-            <Entry Text="{Binding NewToDoDescription}"
-                   Placeholder="Description"/>
-            <Button Text="Add ToDo"
-                    Command="{Binding AddToDoCommand}"/>
+            <!-- Add New ToDo Section -->
+            <Frame BackgroundColor="#f0f0f0"
+                   BorderColor="#ccc"
+                   CornerRadius="10"
+                   Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Add New Task"
+                           FontSize="20"
+                           FontAttributes="Bold"/>
 
-            <!-- ToDos List -->
-            <Label Text="Your ToDos"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   Margin="0,20,0,10"/>
-            <CollectionView ItemsSource="{Binding ToDos}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="10"
-                              RowDefinitions="Auto,Auto"
-                              ColumnDefinitions="*,Auto">
-                            <Label Grid.Row="0"
-                                   Grid.Column="0"
-                                   Text="{Binding Name}"
-                                   FontAttributes="Bold"/>
-                            <Label Grid.Row="1"
-                                   Grid.Column="0"
-                                   Text="{Binding Description}"
-                                   FontSize="12"/>
-                            <CheckBox Grid.Row="0"
-                                      Grid.RowSpan="2"
-                                      Grid.Column="1"
-                                      IsChecked="{Binding IsComplete}"/>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                    <!-- Entry for ToDo Name -->
+                    <Entry x:Name="ToDoNameEntry"
+                           Placeholder="Task Name"
+                           Text="{Binding NewToDoName}"/>
 
-            <!-- Add Project Section -->
-            <Label Text="Add New Project"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   Margin="0,20,0,0"/>
-            <Entry Text="{Binding NewProjectName}"
-                   Placeholder="Project Name"/>
-            <Entry Text="{Binding NewProjectDescription}"
-                   Placeholder="Project Description"/>
-            <Button Text="Add Project"
-                    Command="{Binding AddProjectCommand}"/>
+                    <!-- Entry for ToDo Description -->
+                    <Entry x:Name="ToDoDescriptionEntry"
+                           Placeholder="Task Description"
+                           Text="{Binding NewToDoDescription}"/>
 
-            <!-- Projects List -->
-            <Label Text="Your Projects"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   Margin="0,20,0,10"/>
-            <CollectionView ItemsSource="{Binding Projects}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="10"
-                              RowDefinitions="Auto,Auto">
-                            <Label Grid.Row="0"
-                                   Text="{Binding Name}"
-                                   FontAttributes="Bold"/>
-                            <Label Grid.Row="1"
-                                   Text="{Binding Description}"
-                                   FontSize="12"/>
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                    <!-- Picker for Priority -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Priority:"
+                               VerticalOptions="Center"/>
+                        <Picker x:Name="PriorityPicker"
+                                Title="Select Priority"
+                                ItemsSource="{Binding PriorityOptions}"
+                                SelectedItem="{Binding NewToDoPriority}"
+                                WidthRequest="100"/>
+                    </HorizontalStackLayout>
+
+                    <!-- DatePicker for Due Date -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Due Date:"
+                               VerticalOptions="Center"/>
+                        <DatePicker x:Name="DueDatePicker"
+                                    Date="{Binding NewToDoDueDate}"
+                                    MinimumDate="{x:Static sys:DateTime.Now}"
+                                    Format="yyyy-MM-dd"/>
+                    </HorizontalStackLayout>
+
+                    <Button Text="Add Task"
+                            Command="{Binding AddToDoCommand}"
+                            BackgroundColor="#007AFF"
+                            TextColor="White"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Add New Project Section -->
+            <Frame BackgroundColor="#f0f0f0"
+                   BorderColor="#ccc"
+                   CornerRadius="10"
+                   Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Add New Project"
+                           FontSize="20"
+                           FontAttributes="Bold"/>
+
+                    <Entry Placeholder="Project Name"
+                           Text="{Binding NewProjectName}"/>
+
+                    <Entry Placeholder="Project Description"
+                           Text="{Binding NewProjectDescription}"/>
+
+                    <Button Text="Add Project"
+                            Command="{Binding AddProjectCommand}"
+                            BackgroundColor="#34C759"
+                            TextColor="White"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- ToDo List Section -->
+            <Frame BackgroundColor="#f0f0f0"
+                   BorderColor="#ccc"
+                   CornerRadius="10"
+                   Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Tasks"
+                           FontSize="20"
+                           FontAttributes="Bold"/>
+
+                    <!-- ListView for ToDos -->
+                    <ListView x:Name="ToDoListView"
+                              ItemsSource="{Binding ToDos}"
+                              SelectedItem="{Binding SelectedToDo}"
+                              RowHeight="120"
+                              SeparatorVisibility="Default">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <ViewCell>
+                                    <Frame Margin="5"
+                                           Padding="10"
+                                           BackgroundColor="White"
+                                           BorderColor="#ddd">
+                                        <Grid ColumnDefinitions="Auto,*,Auto"
+                                              RowDefinitions="Auto,Auto,Auto">
+                                            <!-- CheckBox for IsComplete -->
+                                            <CheckBox Grid.Row="0"
+                                                      Grid.Column="0"
+                                                      Grid.RowSpan="2"
+                                                      IsChecked="{Binding IsComplete}"
+                                                      VerticalOptions="Center"
+                                                      CheckedChanged="OnToDoCompleteChanged"/>
+
+                                            <!-- ToDo Details -->
+                                            <Label Grid.Row="0"
+                                                   Grid.Column="1"
+                                                   Text="{Binding Name}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"/>
+
+                                            <Label Grid.Row="1"
+                                                   Grid.Column="1"
+                                                   Text="{Binding Description}"
+                                                   FontSize="14"
+                                                   TextColor="Gray"/>
+
+                                            <HorizontalStackLayout Grid.Row="2"
+                                                                   Grid.Column="1"
+                                                                   Spacing="10">
+                                                <Label Text="Priority:"
+                                                       FontSize="12"/>
+                                                <Label Text="{Binding Priority}"
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"/>
+                                                <Label Text="Due:"
+                                                       FontSize="12"/>
+                                                <Label Text="{Binding DueDate, StringFormat='{0:MMM dd, yyyy}'}"
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"/>
+                                            </HorizontalStackLayout>
+
+                                            <!-- Delete Button -->
+                                            <Button Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    Grid.RowSpan="2"
+                                                    Text="Delete"
+                                                    Command="{Binding Source={x:Reference ToDoListView}, Path=BindingContext.DeleteToDoCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#FF3B30"
+                                                    TextColor="White"
+                                                    VerticalOptions="Center"
+                                                    Padding="10,5"/>
+                                        </Grid>
+                                    </Frame>
+                                </ViewCell>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Project List Section -->
+            <Frame BackgroundColor="#f0f0f0"
+                   BorderColor="#ccc"
+                   CornerRadius="10"
+                   Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Projects"
+                           FontSize="20"
+                           FontAttributes="Bold"/>
+
+                    <ListView ItemsSource="{Binding Projects}"
+                              SelectedItem="{Binding SelectedProject}"
+                              RowHeight="80">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <ViewCell>
+                                    <Frame Margin="5"
+                                           Padding="10"
+                                           BackgroundColor="White"
+                                           BorderColor="#ddd">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <VerticalStackLayout Grid.Column="0">
+                                                <Label Text="{Binding Name}"
+                                                       FontSize="16"
+                                                       FontAttributes="Bold"/>
+                                                <Label Text="{Binding Description}"
+                                                       FontSize="14"
+                                                       TextColor="Gray"/>
+                                            </VerticalStackLayout>
+
+                                            <Button Grid.Column="1"
+                                                    Text="Delete"
+                                                    Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DeleteProjectCommand}"
+                                                    CommandParameter="{Binding .}"
+                                                    BackgroundColor="#FF3B30"
+                                                    TextColor="White"
+                                                    VerticalOptions="Center"
+                                                    Padding="10,5"/>
+                                        </Grid>
+                                    </Frame>
+                                </ViewCell>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </VerticalStackLayout>
+            </Frame>
 
         </VerticalStackLayout>
     </ScrollView>
-
 </ContentPage>
