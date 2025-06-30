@@ -105,6 +105,7 @@ namespace Asana.Library.Services
                     existing.Priority = toDo.Priority;
                     existing.IsComplete = toDo.IsComplete;
                     existing.ProjectId = toDo.ProjectId;
+                    existing.DueDate = toDo.DueDate;  // ADD THIS LINE
                 }
             }
             return toDo;
@@ -114,6 +115,7 @@ namespace Asana.Library.Services
         {
             return _toDoList.FirstOrDefault(t => t.Id == id);
         }
+
 
         public void DisplayToDos()
         {
@@ -130,7 +132,7 @@ namespace Asana.Library.Services
                         ? $" (Project ID: {t.ProjectId})"
                         : " (No Project)";
 
-                    Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Complete: {t.IsComplete}{projectInfo}");
+                    Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Due: {t.DueDate:yyyy-MM-dd} - Complete: {t.IsComplete}{projectInfo}");
                 }
             }
         }

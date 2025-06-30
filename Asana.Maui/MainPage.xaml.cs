@@ -1,4 +1,5 @@
 ﻿using Asana.Library.Models;
+using Asana.Library.Services;
 using Asana.Maui.ViewModels;
 
 namespace Asana.Maui;
@@ -12,13 +13,17 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 		_viewModel = new MainPageViewModel();
 		BindingContext = _viewModel;
+
+		// Set minimum date for DatePicker
+		DueDatePicker.MinimumDate = DateTime.Today;
 	}
 
 	private void OnToDoCompleteChanged(object sender, CheckedChangedEventArgs e)
 	{
 		if (sender is CheckBox checkBox && checkBox.BindingContext is ToDo toDo)
 		{
-			_viewModel.ToggleToDoCompleteCommand.Execute(toDo);
+			// Update the ToDo with the new completion status
+			ToDoServiceProxy.Current.AddOrUpdateToDo(toDo);
 		}
 	}
 }

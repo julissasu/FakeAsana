@@ -1,12 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
              x:Class="Asana.Maui.MainPage"
              Title="Task Manager">
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="20"
-                             Padding="20">
+    <Grid RowDefinitions="Auto,*"
+          Padding="20">
+        <!-- Header/Input Section -->
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="20">
 
             <!-- Add New ToDo Section -->
             <Frame BackgroundColor="#f0f0f0"
@@ -45,8 +48,19 @@
                                VerticalOptions="Center"/>
                         <DatePicker x:Name="DueDatePicker"
                                     Date="{Binding NewToDoDueDate}"
-                                    MinimumDate="{x:Static sys:DateTime.Now}"
                                     Format="yyyy-MM-dd"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Project Picker -->
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Project:"
+                               VerticalOptions="Center"/>
+                        <Picker x:Name="ProjectPicker"
+                                Title="Select Project (Optional)"
+                                ItemsSource="{Binding Projects}"
+                                ItemDisplayBinding="{Binding Name}"
+                                SelectedItem="{Binding SelectedProjectForNewToDo}"
+                                WidthRequest="200"/>
                     </HorizontalStackLayout>
 
                     <Button Text="Add Task"
@@ -78,27 +92,38 @@
                             TextColor="White"/>
                 </VerticalStackLayout>
             </Frame>
+        </VerticalStackLayout>
 
-            <!-- ToDo List Section -->
-            <Frame BackgroundColor="#f0f0f0"
-                   BorderColor="#ccc"
-                   CornerRadius="10"
-                   Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Tasks"
-                           FontSize="20"
-                           FontAttributes="Bold"/>
+        <!-- Lists Section -->
+        <ScrollView Grid.Row="1"
+                    Margin="0,20,0,0">
+            <VerticalStackLayout Spacing="20">
 
-                    <!-- ListView for ToDos -->
-                    <ListView x:Name="ToDoListView"
-                              ItemsSource="{Binding ToDos}"
-                              SelectedItem="{Binding SelectedToDo}"
-                              RowHeight="120"
-                              SeparatorVisibility="Default">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <ViewCell>
-                                    <Frame Margin="5"
+                <!-- ToDo List Section -->
+                <Frame BackgroundColor="#f0f0f0"
+                       BorderColor="#ccc"
+                       CornerRadius="10"
+                       Padding="15">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Tasks"
+                               FontSize="20"
+                               FontAttributes="Bold"/>
+
+                        <!-- CollectionView for ToDos (better than ListView for MAUI) -->
+                        <CollectionView x:Name="ToDoListView"
+                                        ItemsSource="{Binding ToDos}"
+                                        SelectedItem="{Binding SelectedToDo}"
+                                        SelectionMode="Single"
+                                        VerticalOptions="FillAndExpand"
+                                        HeightRequest="300">
+                            <CollectionView.EmptyView>
+                                <Label Text="No tasks yet. Add one above!"
+                                       HorizontalOptions="Center"
+                                       TextColor="Gray"/>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame Margin="0,5"
                                            Padding="10"
                                            BackgroundColor="White"
                                            BorderColor="#ddd">
@@ -138,6 +163,9 @@
                                                 <Label Text="{Binding DueDate, StringFormat='{0:MMM dd, yyyy}'}"
                                                        FontSize="12"
                                                        FontAttributes="Bold"/>
+                                                <Label Text="{Binding ProjectId, StringFormat='Project: {0}'}"
+                                                       FontSize="12"
+                                                       IsVisible="{Binding ProjectId, Converter={StaticResource NullToBoolConverter}}"/>
                                             </HorizontalStackLayout>
 
                                             <!-- Delete Button -->
@@ -153,30 +181,35 @@
                                                     Padding="10,5"/>
                                         </Grid>
                                     </Frame>
-                                </ViewCell>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </VerticalStackLayout>
-            </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
 
-            <!-- Project List Section -->
-            <Frame BackgroundColor="#f0f0f0"
-                   BorderColor="#ccc"
-                   CornerRadius="10"
-                   Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Projects"
-                           FontSize="20"
-                           FontAttributes="Bold"/>
+                <!-- Project List Section -->
+                <Frame BackgroundColor="#f0f0f0"
+                       BorderColor="#ccc"
+                       CornerRadius="10"
+                       Padding="15">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Projects"
+                               FontSize="20"
+                               FontAttributes="Bold"/>
 
-                    <ListView ItemsSource="{Binding Projects}"
-                              SelectedItem="{Binding SelectedProject}"
-                              RowHeight="80">
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <ViewCell>
-                                    <Frame Margin="5"
+                        <CollectionView ItemsSource="{Binding Projects}"
+                                        SelectedItem="{Binding SelectedProject}"
+                                        SelectionMode="Single"
+                                        VerticalOptions="FillAndExpand"
+                                        HeightRequest="200">
+                            <CollectionView.EmptyView>
+                                <Label Text="No projects yet. Create one above!"
+                                       HorizontalOptions="Center"
+                                       TextColor="Gray"/>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame Margin="0,5"
                                            Padding="10"
                                            BackgroundColor="White"
                                            BorderColor="#ddd">
@@ -200,13 +233,13 @@
                                                     Padding="10,5"/>
                                         </Grid>
                                     </Frame>
-                                </ViewCell>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </VerticalStackLayout>
-            </Frame>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Frame>
 
-        </VerticalStackLayout>
-    </ScrollView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

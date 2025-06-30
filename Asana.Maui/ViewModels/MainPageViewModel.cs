@@ -20,7 +20,11 @@ namespace Asana.Maui.ViewModels
         public string NewToDoName
         {
             get => _newToDoName;
-            set => SetProperty(ref _newToDoName, value);
+            set
+            {
+                SetProperty(ref _newToDoName, value);
+                ((Command)AddToDoCommand).ChangeCanExecute();
+            }
         }
 
         private string _newToDoDescription = string.Empty;
@@ -49,7 +53,11 @@ namespace Asana.Maui.ViewModels
         public string NewProjectName
         {
             get => _newProjectName;
-            set => SetProperty(ref _newProjectName, value);
+            set
+            {
+                SetProperty(ref _newProjectName, value);
+                ((Command)AddProjectCommand).ChangeCanExecute();
+            }
         }
 
         private string _newProjectDescription = string.Empty;
@@ -72,6 +80,13 @@ namespace Asana.Maui.ViewModels
         {
             get => _selectedProject;
             set => SetProperty(ref _selectedProject, value);
+        }
+
+        private Project? _selectedProjectForNewToDo;
+        public Project? SelectedProjectForNewToDo
+        {
+            get => _selectedProjectForNewToDo;
+            set => SetProperty(ref _selectedProjectForNewToDo, value);
         }
 
         // For Picker - Priority options
@@ -112,29 +127,47 @@ namespace Asana.Maui.ViewModels
 
         private void AddToDo()
         {
-            if (!CanAddToDo()) return;
-
-            var newToDo = new ToDo
+            try
             {
-                Id = 0, // Will be set by service
-                Name = NewToDoName,
-                Description = NewToDoDescription,
-                Priority = NewToDoPriority,
-                DueDate = NewToDoDueDate,
-                IsComplete = false
-            };
+                if (!CanAddToDo()) return;
 
-            var createdToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
-            if (createdToDo != null)
+                var newToDo = new ToDo
+                {
+                    Id = 0, // Will be set by service
+                    Name = NewToDoName,
+                    Description = NewToDoDescription ?? string.Empty,
+                    Priority = NewToDoPriority,
+                    DueDate = NewToDoDueDate,
+                    IsComplete = false,
+                    ProjectId = null
+                };
+
+                var createdToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
+                if (createdToDo != null)
+                {
+                    // Assign to project if one is selected
+                    if (SelectedProjectForNewToDo != null)
+                    {
+                        _toDoSvc.AssignToDoToProject(createdToDo.Id, SelectedProjectForNewToDo.Id);
+                    }
+
+                    // Clear input fields
+                    NewToDoName = string.Empty;
+                    NewToDoDescription = string.Empty;
+                    NewToDoPriority = 1;
+                    NewToDoDueDate = DateTime.Now.AddDays(7);
+                    SelectedProjectForNewToDo = null;
+
+                    // Refresh data to show new ToDo
+                    RefreshData();
+                }
+            }
+            catch (Exception ex)
             {
-                // Clear input fields
-                NewToDoName = string.Empty;
-                NewToDoDescription = string.Empty;
-                NewToDoPriority = 1;
-                NewToDoDueDate = DateTime.Now.AddDays(7);
-
-                // Refresh data to show new ToDo
-                RefreshData();
+                // This will help us see what's causing the crash
+                System.Diagnostics.Debug.WriteLine($"Error adding ToDo: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw; // Re-throw to see the error
             }
         }
 
@@ -216,10 +249,6 @@ namespace Asana.Maui.ViewModels
             {
                 Projects.Add(project);
             }
-
-            // Update command states
-            ((Command)AddToDoCommand).ChangeCanExecute();
-            ((Command)AddProjectCommand).ChangeCanExecute();
         }
 
         // Helper method to get ToDos for a specific project
@@ -227,6 +256,14 @@ namespace Asana.Maui.ViewModels
         {
             var projectToDos = _toDoSvc.GetToDosByProject(projectId);
             return new ObservableCollection<ToDo>(projectToDos);
+        }
+
+        // Helper method to get project name for a ToDo
+        public string GetProjectNameForToDo(int? projectId)
+        {
+            if (!projectId.HasValue) return "No Project";
+            var project = _toDoSvc.GetProjectById(projectId);
+            return project?.Name ?? "Unknown Project";
         }
 
         // INotifyPropertyChanged implementation
