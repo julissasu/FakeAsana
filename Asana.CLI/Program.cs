@@ -172,15 +172,15 @@ namespace Asana
                                             }
                                             else
                                             {
-                                                var newProject = projects.FirstOrDefault(p => p.Id == newProjectId);
-                                                if (newProject != null)
+                                                var targetProject = projects.FirstOrDefault(p => p.Id == newProjectId);
+                                                if (targetProject != null)
                                                 {
                                                     // remove from current project if assigned
                                                     currentProject?.ToDos.Remove(toDoUpdate);
                                                     // add to new project
-                                                    newProject.ToDos.Add(toDoUpdate);
+                                                    targetProject.ToDos.Add(toDoUpdate);
                                                     toDoUpdate.ProjectId = newProjectId;
-                                                    Console.WriteLine($"ToDo '{toDoUpdate.Name}' assigned to project '{newProject.Name}'.");
+                                                    Console.WriteLine($"ToDo '{toDoUpdate.Name}' assigned to project '{targetProject.Name}'.");
                                                 }
                                                 else
                                                 {
@@ -248,6 +248,7 @@ namespace Asana
                                 ToDos = new List<ToDo>()
                             };
                             projects.Add(newProject);   // add new Project to the list
+
                             Console.WriteLine($"Project created with ID {newProject.Id}.");
                             break;
 
