@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Asana.Maui.MainPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Asana ToDo App">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="10"
+                             Padding="20">
+
+            <!-- Add ToDo Section -->
+            <Label Text="Add New ToDo"
+                   FontSize="18"
+                   FontAttributes="Bold"/>
+            <Entry Text="{Binding NewToDoName}"
+                   Placeholder="ToDo Name"/>
+            <Entry Text="{Binding NewToDoDescription}"
+                   Placeholder="Description"/>
+            <Button Text="Add ToDo"
+                    Command="{Binding AddToDoCommand}"/>
+
+            <!-- ToDos List -->
+            <Label Text="Your ToDos"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,20,0,10"/>
+            <CollectionView ItemsSource="{Binding ToDos}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10"
+                              RowDefinitions="Auto,Auto"
+                              ColumnDefinitions="*,Auto">
+                            <Label Grid.Row="0"
+                                   Grid.Column="0"
+                                   Text="{Binding Name}"
+                                   FontAttributes="Bold"/>
+                            <Label Grid.Row="1"
+                                   Grid.Column="0"
+                                   Text="{Binding Description}"
+                                   FontSize="12"/>
+                            <CheckBox Grid.Row="0"
+                                      Grid.RowSpan="2"
+                                      Grid.Column="1"
+                                      IsChecked="{Binding IsComplete}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Add Project Section -->
+            <Label Text="Add New Project"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,20,0,0"/>
+            <Entry Text="{Binding NewProjectName}"
+                   Placeholder="Project Name"/>
+            <Entry Text="{Binding NewProjectDescription}"
+                   Placeholder="Project Description"/>
+            <Button Text="Add Project"
+                    Command="{Binding AddProjectCommand}"/>
+
+            <!-- Projects List -->
+            <Label Text="Your Projects"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   Margin="0,20,0,10"/>
+            <CollectionView ItemsSource="{Binding Projects}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10"
+                              RowDefinitions="Auto,Auto">
+                            <Label Grid.Row="0"
+                                   Text="{Binding Name}"
+                                   FontAttributes="Bold"/>
+                            <Label Grid.Row="1"
+                                   Text="{Binding Description}"
+                                   FontSize="12"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

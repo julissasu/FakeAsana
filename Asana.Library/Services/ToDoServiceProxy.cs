@@ -7,191 +7,124 @@ using System.Threading.Tasks;
 
 namespace Asana.Library.Services
 {
-    public static class ToDoServiceProxy
+    public class ToDoServiceProxy
     {
         // static data storage
-        public static List<ToDo> toDos = new List<ToDo>();
-        public static List<Project> projects = new List<Project>();
+        private List<ToDo> _toDoList;
+        private List<Project> _projectList;
 
-        // static IDs for ToDos and Projects
-        public static int nextToDoId = 1;
-        public static int nextProjectId = 1;
-
-        // function to create a new ToDo
-        public static void CreateToDo()
+        public List<ToDo> ToDos
         {
-            // prompt user for ToDo details
-            Console.Write("Name: ");
-            var name = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(name))
+            get
             {
-                Console.WriteLine("Name cannot be empty. ToDo not created.");
-                return; // skip creation if name is empty
+                return _toDoList.ToList();
             }
-
-            Console.Write("Description: ");
-            var description = Console.ReadLine();
-
-            Console.Write("Priority (1-3): ");
-            int.TryParse(Console.ReadLine(), out int priority);
-            if (priority < 1 || priority > 3)
+            private set
             {
-                Console.WriteLine("Priority must be between 1-3. Setting to default 1.");
-                priority = 1;   // default priority if invalid
-            }
-
-            var newToDo = new ToDo
-            {
-                Id = nextToDoId++,
-                Name = name,
-                Description = description,
-                Priority = priority,
-                IsComplete = false
-            };
-
-            toDos.Add(newToDo); // add new ToDo to the list
-
-            if (projects.Count > 0)
-            {
-                // add ToDo to a project if it exists
-                Console.Write("Assign to Project ID (or leave empty): ");
-                var projInput = Console.ReadLine();
-                if (int.TryParse(projInput, out int projId))
+                if (value != _toDoList)
                 {
-                    // find the project by ID
-                    var proj = projects.FirstOrDefault(p => p.Id == projId);
-                    if (proj != null)
-                    {
-                        newToDo.ProjectId = proj.Id;
-                        proj.ToDos.Add(newToDo);
-                        Console.WriteLine($"ToDo assigned to project '{proj.Name}'.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Project not found. ToDo created without project.");
-                    }
+                    _toDoList = value;
                 }
-            }
-            Console.WriteLine($"ToDo created with ID {newToDo.Id}.");
-        }
-
-        // function to delete a ToDo
-        public static void DeleteToDo()
-        {
-            Console.Write("Enter ToDo ID to delete: ");
-            int.TryParse(Console.ReadLine(), out int deleteId);
-            var toDoDelete = toDos.FirstOrDefault(t => t.Id == deleteId);   // find ToDo by ID
-            if (toDoDelete != null)
-            {
-                toDos.Remove(toDoDelete);   // remove ToDo from the list
-                var proj = projects.FirstOrDefault(p => p.Id == toDoDelete.ProjectId);  // find the project by ToDo's ProjectId
-                proj?.ToDos.Remove(toDoDelete); // remove ToDo from the project if it exists
-
-                Console.WriteLine($"ToDo with ID {deleteId} deleted.");
-            }
-            else
-            {
-                Console.WriteLine($"ToDo with ID {deleteId} not found");
             }
         }
 
-        // function to update a ToDo (completion or project assignment)
-        public static void UpdateToDo()
+        public List<Project> Projects
         {
-            Console.Write("Enter ToDo Id to update: ");
-            int.TryParse(Console.ReadLine(), out int updateId);
-            var toDoUpdate = toDos.FirstOrDefault(t => t.Id == updateId);   // find ToDo by ID
-            if (toDoUpdate != null)
+            get
             {
-                Console.WriteLine($"Updating ToDo: '{toDoUpdate.Name}'");
-                Console.WriteLine("What would you like to update?");
-                Console.WriteLine("1. Toggle completion status");
-                Console.WriteLine("2. Change project assignment");
-                Console.Write("Enter choice (1 or 2): ");
-
-                var updateChoice = Console.ReadLine();
-
-                if (updateChoice == "1")
-                {
-                    // toggle completion status
-                    toDoUpdate.IsComplete = !toDoUpdate.IsComplete;
-                    string status = toDoUpdate.IsComplete ? "completed" : "incomplete";
-                    Console.WriteLine($"ToDo '{toDoUpdate.Name}' marked as {status}.");
-                }
-                else if (updateChoice == "2")
-                {
-                    // change project assignment
-                    var currentProject = projects.FirstOrDefault(p => p.Id == toDoUpdate.ProjectId);
-                    Console.WriteLine($"Current project: {(currentProject?.Name ?? "None")}");
-
-                    if (projects.Count == 0)
-                    {
-                        Console.WriteLine("No projects available. Create a project first.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Available projects:");
-                        foreach (var p in projects)
-                        {
-                            Console.WriteLine($"  [{p.Id}] {p.Name}");
-                        }
-                        Console.Write("Enter Project ID to assign (or 0 to unassign): ");
-
-                        if (int.TryParse(Console.ReadLine(), out int newProjectId))
-                        {
-                            if (newProjectId == 0)
-                            {
-                                // unassign from project
-                                currentProject?.ToDos.Remove(toDoUpdate);
-                                toDoUpdate.ProjectId = null;
-                                Console.WriteLine($"ToDo '{toDoUpdate.Name}' unassigned from all projects.");
-                            }
-                            else
-                            {
-                                var targetProject = projects.FirstOrDefault(p => p.Id == newProjectId);
-                                if (targetProject != null)
-                                {
-                                    // remove from current project if assigned
-                                    currentProject?.ToDos.Remove(toDoUpdate);
-                                    // add to new project
-                                    targetProject.ToDos.Add(toDoUpdate);
-                                    toDoUpdate.ProjectId = newProjectId;
-                                    Console.WriteLine($"ToDo '{toDoUpdate.Name}' assigned to project '{targetProject.Name}'.");
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Project not found. Assignment unchanged.");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Console.WriteLine("Invalid input. Assignment unchanged.");
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Invalid choice. No changes made.");
-                }
+                return _projectList.ToList();
             }
-            else
+            private set
             {
-                Console.WriteLine($"ToDo with ID {updateId} not found.");
+                if (value != _projectList)
+                {
+                    _projectList = value;
+                }
             }
         }
 
-        // function to display all ToDos
-        public static void DisplayAllToDos()
+        private ToDoServiceProxy()
+        {
+            _toDoList = new List<ToDo>();
+            _projectList = new List<Project>();
+        }
+
+        private static ToDoServiceProxy? instance;
+
+        public static ToDoServiceProxy Current
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new ToDoServiceProxy();
+                }
+                return instance;
+            }
+        }
+
+        private int nextToDoKey
+        {
+            get
+            {
+                if (_toDoList.Any())
+                {
+                    return _toDoList.Select(t => t.Id).Max() + 1; // get next ID based on max existing ID
+                }
+                return 1; // start from 1 if no ToDos exist
+            }
+        }
+
+        private int nextProjectKey
+        {
+            get
+            {
+                if (_projectList.Any())
+                {
+                    return _projectList.Select(p => p.Id).Max() + 1; // get next ID based on max existing ID
+                }
+                return 1; // start from 1 if no Projects exist
+            }
+        }
+
+        // ToDo methods
+        public ToDo? AddOrUpdateToDo(ToDo? toDo)
+        {
+            if (toDo != null && toDo.Id == 0)
+            {
+                toDo.Id = nextToDoKey;
+                _toDoList.Add(toDo);
+            }
+            else if (toDo != null)
+            {
+                var existing = _toDoList.FirstOrDefault(t => t.Id == toDo.Id);
+                if (existing != null)
+                {
+                    existing.Name = toDo.Name;
+                    existing.Description = toDo.Description;
+                    existing.Priority = toDo.Priority;
+                    existing.IsComplete = toDo.IsComplete;
+                    existing.ProjectId = toDo.ProjectId;
+                }
+            }
+            return toDo;
+        }
+
+        public ToDo? GetToDoById(int id)
+        {
+            return _toDoList.FirstOrDefault(t => t.Id == id);
+        }
+
+        public void DisplayToDos()
         {
             Console.WriteLine("All ToDos:");
-            if (toDos.Count == 0)
+            if (_toDoList.Count == 0)
             {
                 Console.WriteLine("No ToDos found.");
             }
             else
             {
-                foreach (var t in toDos)
+                foreach (var t in _toDoList)
                 {
                     var projectInfo = t.ProjectId.HasValue
                         ? $" (Project ID: {t.ProjectId})"
@@ -202,120 +135,114 @@ namespace Asana.Library.Services
             }
         }
 
-        // function to create a new Project
-        public static void CreateProject()
+        public void DeleteToDo(ToDo? toDo)
         {
-            // prompt user for Project details
-            Console.Write("Project Name: ");
-            var projName = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(projName))
-            {
-                Console.WriteLine("Project name cannot be empty. Project not created.");
-                return; // skip creation if name is empty
-            }
+            if (toDo == null) return;
 
-            Console.Write("Project Description: ");
-            var projDescription = Console.ReadLine();
+            // Remove from project if assigned
+            var project = _projectList.FirstOrDefault(p => p.Id == toDo.ProjectId);
+            project?.ToDos.Remove(toDo);
 
-            var newProject = new Project
-            {
-                Id = nextProjectId++,
-                Name = projName,
-                Description = projDescription,
-                CompletePercent = 0,
-                ToDos = new List<ToDo>()
-            };
-            projects.Add(newProject);   // add new Project to the list
-
-            Console.WriteLine($"Project created with ID {newProject.Id}.");
+            _toDoList.Remove(toDo);
         }
 
-        // function to delete an existing Project
-        public static void DeleteProject()
+        public bool AssignToDoToProject(int toDoId, int? projectId)
         {
-            Console.Write("Enter Project ID to delete: ");
-            int.TryParse(Console.ReadLine(), out int deleteProjId);
-            var projectDelete = projects.FirstOrDefault(p => p.Id == deleteProjId); // find Project by ID
-            if (projectDelete != null)
+            var toDo = GetToDoById(toDoId);
+            if (toDo == null) return false;
+
+            // Remove from current project
+            var currentProject = _projectList.FirstOrDefault(p => p.Id == toDo.ProjectId);
+            currentProject?.ToDos.Remove(toDo);
+
+            if (projectId.HasValue && projectId > 0)
             {
-                // unassign all ToDos from this project
-                foreach (var todo in projectDelete.ToDos)
+                var targetProject = GetProjectById(projectId);
+                if (targetProject != null)
                 {
-                    todo.ProjectId = null;
+                    toDo.ProjectId = projectId;
+                    targetProject.ToDos.Add(toDo);
+                    return true;
                 }
-                projects.Remove(projectDelete);
-                Console.WriteLine($"Project with ID {deleteProjId} deleted. Associated ToDos unassigned.");
+                return false;
             }
             else
             {
-                Console.WriteLine($"Project with ID {deleteProjId} not found.");
+                toDo.ProjectId = null;
+                return true;
             }
         }
 
-        // function to update an existing Project
-        public static void UpdateProject()
+        // Project methods
+        public Project? AddOrUpdateProject(Project? project)
         {
-            Console.Write("Enter Project ID to update: ");
-            int.TryParse(Console.ReadLine(), out int updateProjId);
-            var projectUpdate = projects.FirstOrDefault(p => p.Id == updateProjId); // find Project by ID
-            if (projectUpdate != null)
+            if (project != null && project.Id == 0)
             {
-                // prompt user for new values (allow keeping existing values)
-                Console.Write($"New Name (current: '{projectUpdate.Name}', press Enter to keep): ");
-                var newProjName = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(newProjName))
-                    projectUpdate.Name = newProjName;
-
-                Console.Write($"New Description (current: '{projectUpdate.Description}', press Enter to keep): ");
-                var newProjDescription = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(newProjDescription))
-                    projectUpdate.Description = newProjDescription;
-
-                Console.WriteLine($"Project with ID {updateProjId} updated.");
+                project.Id = nextProjectKey;
+                project.ToDos = new List<ToDo>();
+                _projectList.Add(project);
             }
-            else
+            else if (project != null)
             {
-                Console.WriteLine($"Project with ID {updateProjId} not found.");
+                var existing = _projectList.FirstOrDefault(p => p.Id == project.Id);
+                if (existing != null)
+                {
+                    existing.Name = project.Name;
+                    existing.Description = project.Description;
+                }
             }
+            return project;
         }
 
-        // function to list all Projects
-        public static void DisplayAllProjects()
+        public Project? GetProjectById(int? id)
+        {
+            if (!id.HasValue) return null;
+            return _projectList.FirstOrDefault(p => p.Id == id);
+        }
+
+        public void DisplayProjects()
         {
             Console.WriteLine("All Projects:");
-            if (projects.Count == 0)
+            if (_projectList.Count == 0)
             {
                 Console.WriteLine("No projects found.");
             }
             else
             {
-                foreach (var p in projects)
+                foreach (var p in _projectList)
                 {
-                    // calculate completion percentage for each project
                     double completed = p.ToDos.Count > 0 ? p.ToDos.Count(td => td.IsComplete) * 100.0 / p.ToDos.Count : 0;
-                    // display project details
                     Console.WriteLine($"[{p.Id}] {p.Name} - {p.Description} - Complete: {completed:F1}% ({p.ToDos.Count(td => td.IsComplete)}/{p.ToDos.Count} tasks)");
                 }
             }
         }
 
-        // function to list all ToDos in a given Project
-        public static void DisplayToDosByProject()
+        public void DeleteProject(Project? project)
         {
-            Console.Write("Enter Project ID to view its ToDos: ");
-            int.TryParse(Console.ReadLine(), out int pidToView);
-            var projectToView = projects.FirstOrDefault(p => p.Id == pidToView);    // find Project by ID
-            if (projectToView != null)
+            if (project == null) return;
+
+            // Unassign all ToDos from this project
+            foreach (var todo in project.ToDos)
             {
-                Console.WriteLine($"ToDos for project '{projectToView.Name}':");
-                if (projectToView.ToDos.Count == 0)
+                todo.ProjectId = null;
+            }
+            _projectList.Remove(project);
+        }
+
+        public void DisplayToDosByProject(int projectId)
+        {
+            var project = GetProjectById(projectId);
+            if (project != null)
+            {
+                Console.WriteLine($"ToDos for project '{project.Name}':");
+                var projectToDos = GetToDosByProject(projectId);
+                if (projectToDos.Count == 0)
                 {
                     Console.WriteLine("No ToDos assigned to this project.");
                 }
                 else
                 {
-                    // display ToDos for the project
-                    foreach (var t in projectToView.ToDos)
+                    foreach (var t in projectToDos)
                     {
                         Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Complete: {t.IsComplete}");
                     }
@@ -325,6 +252,12 @@ namespace Asana.Library.Services
             {
                 Console.WriteLine("Project not found.");
             }
+        }
+
+        public List<ToDo> GetToDosByProject(int projectId)
+        {
+            var project = GetProjectById(projectId);
+            return project?.ToDos.ToList() ?? new List<ToDo>();
         }
     }
 }
