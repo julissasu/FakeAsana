@@ -15,7 +15,7 @@ namespace Asana.Maui.ViewModels
         public ObservableCollection<ToDo> ToDos { get; set; }
         public ObservableCollection<Project> Projects { get; set; }
 
-        // NEW: Properties for collapsible forms
+        // Properties for collapsible forms
         private bool _showAddTaskForm = false;
         public bool ShowAddTaskForm
         {
@@ -29,10 +29,6 @@ namespace Asana.Maui.ViewModels
             get => _showAddProjectForm;
             set => SetProperty(ref _showAddProjectForm, value);
         }
-
-        // NEW: Properties for display counts
-        public string TaskCount => $"{ToDos.Count}";
-        public string ProjectCount => $"{Projects.Count}";
 
         // Properties for new ToDo creation
         private string _newToDoName = string.Empty;
@@ -71,7 +67,7 @@ namespace Asana.Maui.ViewModels
         public Color Priority2Color => NewToDoPriority == 2 ? Colors.DarkGray : Colors.LightGray;
         public Color Priority3Color => NewToDoPriority == 3 ? Colors.DarkGray : Colors.LightGray;
 
-        private DateTime _newToDoDueDate = DateTime.Now.AddDays(7);
+        private DateTime _newToDoDueDate = DateTime.Now;
         public DateTime NewToDoDueDate
         {
             get => _newToDoDueDate;
@@ -144,8 +140,6 @@ namespace Asana.Maui.ViewModels
         public ICommand SetPriorityCommand { get; }
         public ICommand ShowProjectSelectorCommand { get; }
         public ICommand EditToDoCommand { get; }
-
-        // NEW: Toggle form commands
         public ICommand ToggleAddTaskFormCommand { get; }
         public ICommand ToggleAddProjectFormCommand { get; }
 
@@ -302,7 +296,7 @@ namespace Asana.Maui.ViewModels
             NewToDoName = string.Empty;
             NewToDoDescription = string.Empty;
             NewToDoPriority = 1;
-            NewToDoDueDate = DateTime.Now.AddDays(7);
+            NewToDoDueDate = DateTime.Now;
             SelectedProjectForNewToDo = null;
         }
 
@@ -540,7 +534,7 @@ namespace Asana.Maui.ViewModels
             if (toDo == null) return;
             toDo.IsComplete = !toDo.IsComplete;
             _toDoSvc.AddOrUpdateToDo(toDo);
-            RefreshData();
+            // Don't call RefreshData() - visual changes happen via DataTriggers
         }
 
         private void DeleteProject(Project? project)
@@ -550,9 +544,9 @@ namespace Asana.Maui.ViewModels
             RefreshData();
         }
 
-        private void RefreshData()
+        public void RefreshData()
         {
-            // Clear and reload ToDos
+            // Simple approach: clear and rebuild collections
             ToDos.Clear();
             foreach (var todo in _toDoSvc.ToDos)
             {
@@ -568,16 +562,11 @@ namespace Asana.Maui.ViewModels
                 ToDos.Add(todo);
             }
 
-            // Clear and reload Projects
             Projects.Clear();
             foreach (var project in _toDoSvc.Projects)
             {
                 Projects.Add(project);
             }
-
-            // Update count displays
-            OnPropertyChanged(nameof(TaskCount));
-            OnPropertyChanged(nameof(ProjectCount));
         }
 
         // INotifyPropertyChanged implementation
