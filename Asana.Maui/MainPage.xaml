@@ -42,18 +42,21 @@
                                                          BackgroundColor="{Binding Priority1Color}"
                                                          Command="{Binding SetPriorityCommand}"
                                                          CommandParameter="1"
+                                                         TextColor="White"
                                                          WidthRequest="40"
                                                          HeightRequest="40"/>
                                                  <Button Text="2"
                                                          BackgroundColor="{Binding Priority2Color}"
                                                          Command="{Binding SetPriorityCommand}"
                                                          CommandParameter="2"
+                                                         TextColor="White"
                                                          WidthRequest="40"
                                                          HeightRequest="40"/>
                                                  <Button Text="3"
                                                          BackgroundColor="{Binding Priority3Color}"
                                                          Command="{Binding SetPriorityCommand}"
                                                          CommandParameter="3"
+                                                         TextColor="White"
                                                          WidthRequest="40"
                                                          HeightRequest="40"/>
                                           </HorizontalStackLayout>
@@ -65,19 +68,22 @@
                                                  VerticalOptions="Center"/>
                                           <DatePicker x:Name="DueDatePicker"
                                                       Date="{Binding NewToDoDueDate}"
-                                                      Format="yyyy-MM-dd"/>
+                                                      Format="yyyy-MM-dd"
+                                                      VerticalOptions="Center"/>
                                    </HorizontalStackLayout>
 
-                                   <!-- Project Picker -->
+                                   <!-- Project Selection Button -->
                                    <HorizontalStackLayout Spacing="10">
                                           <Label Text="Project:"
-                                                 VerticalOptions="Center"/>
-                                          <Picker x:Name="ProjectPicker"
-                                                  Title="Select Project (Optional)"
-                                                  ItemsSource="{Binding Projects}"
-                                                  ItemDisplayBinding="{Binding Name}"
-                                                  SelectedItem="{Binding SelectedProjectForNewToDo}"
-                                                  WidthRequest="200"/>
+                                                 VerticalOptions="Center"
+                                                 TextColor="{AppThemeBinding Light=Black, Dark=White}"/>
+
+                                          <Button Text="{Binding SelectedProjectDisplay}"
+                                                  Command="{Binding ShowProjectSelectorCommand}"
+                                                  BackgroundColor="{AppThemeBinding Light=LightGray, Dark=#3c3c3c}"
+                                                  TextColor="{AppThemeBinding Light=Black, Dark=White}"
+                                                  WidthRequest="200"
+                                                  HeightRequest="44"/>
                                    </HorizontalStackLayout>
 
                                    <Button Text="Add Task"
@@ -180,21 +186,38 @@
                                                                                     <Label Text="{Binding DueDate, StringFormat='{0:MMM dd, yyyy}'}"
                                                                                            FontSize="12"
                                                                                            FontAttributes="Bold"/>
-                                                                                    <Label Text="{Binding ProjectId, StringFormat='Project: {0}'}"
-                                                                                           FontSize="12"/>
+                                                                                    <Label Text="{Binding ProjectDisplayName}"
+                                                                                           FontSize="12"
+                                                                                           IsVisible="{Binding ProjectId}"/>
                                                                              </HorizontalStackLayout>
 
-                                                                             <!-- Delete Button -->
-                                                                             <Button Grid.Row="0"
-                                                                                     Grid.Column="2"
-                                                                                     Grid.RowSpan="2"
-                                                                                     Text="Delete"
-                                                                                     Command="{Binding Source={x:Reference ToDoListView}, Path=BindingContext.DeleteToDoCommand}"
-                                                                                     CommandParameter="{Binding .}"
-                                                                                     BackgroundColor="#FF3B30"
-                                                                                     TextColor="White"
-                                                                                     VerticalOptions="Center"
-                                                                                     Padding="10,5"/>
+                                                                             <!-- UPDATED: Edit and Delete Buttons -->
+                                                                             <Grid Grid.Row="0"
+                                                                                   Grid.Column="2"
+                                                                                   Grid.RowSpan="2"
+                                                                                   RowDefinitions="*,*"
+                                                                                   VerticalOptions="Center">
+
+                                                                                    <!-- Edit Button -->
+                                                                                    <Button Grid.Row="0"
+                                                                                            Text="Edit"
+                                                                                            Command="{Binding Source={x:Reference ToDoListView}, Path=BindingContext.EditToDoCommand}"
+                                                                                            CommandParameter="{Binding .}"
+                                                                                            BackgroundColor="#007AFF"
+                                                                                            TextColor="White"
+                                                                                            Padding="8,3"
+                                                                                            FontSize="12"/>
+
+                                                                                    <!-- Delete Button -->
+                                                                                    <Button Grid.Row="1"
+                                                                                            Text="Delete"
+                                                                                            Command="{Binding Source={x:Reference ToDoListView}, Path=BindingContext.DeleteToDoCommand}"
+                                                                                            CommandParameter="{Binding .}"
+                                                                                            BackgroundColor="#FF3B30"
+                                                                                            TextColor="White"
+                                                                                            Padding="8,3"
+                                                                                            FontSize="12"/>
+                                                                             </Grid>
                                                                       </Grid>
                                                                </Frame>
                                                         </DataTemplate>
