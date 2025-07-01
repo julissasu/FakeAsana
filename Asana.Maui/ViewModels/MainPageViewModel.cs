@@ -38,8 +38,20 @@ namespace Asana.Maui.ViewModels
         public int NewToDoPriority
         {
             get => _newToDoPriority;
-            set => SetProperty(ref _newToDoPriority, value);
+            set
+            {
+                SetProperty(ref _newToDoPriority, value);
+                // Update button colors when priority changes
+                OnPropertyChanged(nameof(Priority1Color));
+                OnPropertyChanged(nameof(Priority2Color));
+                OnPropertyChanged(nameof(Priority3Color));
+            }
         }
+
+        // Priority button colors
+        public Color Priority1Color => NewToDoPriority == 1 ? Colors.DarkGrey : Colors.LightGray;
+        public Color Priority2Color => NewToDoPriority == 2 ? Colors.DarkGrey : Colors.LightGray;
+        public Color Priority3Color => NewToDoPriority == 3 ? Colors.DarkGrey : Colors.LightGray;
 
         private DateTime _newToDoDueDate = DateTime.Now.AddDays(7);
         public DateTime NewToDoDueDate
@@ -89,7 +101,7 @@ namespace Asana.Maui.ViewModels
             set => SetProperty(ref _selectedProjectForNewToDo, value);
         }
 
-        // For Picker - Priority options
+        // For Picker - Priority options (keeping this in case you want to switch back)
         public List<int> PriorityOptions { get; } = new List<int> { 1, 2, 3 };
 
         // Commands
@@ -99,6 +111,7 @@ namespace Asana.Maui.ViewModels
         public ICommand AddProjectCommand { get; }
         public ICommand DeleteProjectCommand { get; }
         public ICommand RefreshCommand { get; }
+        public ICommand SetPriorityCommand { get; } // NEW: Priority button command
 
         public MainPageViewModel()
         {
@@ -115,9 +128,19 @@ namespace Asana.Maui.ViewModels
             AddProjectCommand = new Command(AddProject, CanAddProject);
             DeleteProjectCommand = new Command<Project>(DeleteProject);
             RefreshCommand = new Command(RefreshData);
+            SetPriorityCommand = new Command<string>(SetPriority); // NEW: Initialize priority command
 
             // Load initial data
             RefreshData();
+        }
+
+        // NEW: Priority button method
+        private void SetPriority(string priorityStr)
+        {
+            if (int.TryParse(priorityStr, out int priority))
+            {
+                NewToDoPriority = priority;
+            }
         }
 
         private bool CanAddToDo()
@@ -154,7 +177,7 @@ namespace Asana.Maui.ViewModels
                     // Clear input fields
                     NewToDoName = string.Empty;
                     NewToDoDescription = string.Empty;
-                    NewToDoPriority = 1;
+                    NewToDoPriority = 1; // This will also update the button colors
                     NewToDoDueDate = DateTime.Now.AddDays(7);
                     SelectedProjectForNewToDo = null;
 
