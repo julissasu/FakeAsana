@@ -13,9 +13,6 @@ public partial class MainPage : ContentPage
 		InitializeComponent();
 		_viewModel = new MainPageViewModel();
 		BindingContext = _viewModel;
-
-		// Set minimum date for DatePicker
-		DueDatePicker.MinimumDate = DateTime.Today;
 	}
 
 	private void OnToDoCompleteChanged(object sender, CheckedChangedEventArgs e)

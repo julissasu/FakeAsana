@@ -15,6 +15,25 @@ namespace Asana.Maui.ViewModels
         public ObservableCollection<ToDo> ToDos { get; set; }
         public ObservableCollection<Project> Projects { get; set; }
 
+        // NEW: Properties for collapsible forms
+        private bool _showAddTaskForm = false;
+        public bool ShowAddTaskForm
+        {
+            get => _showAddTaskForm;
+            set => SetProperty(ref _showAddTaskForm, value);
+        }
+
+        private bool _showAddProjectForm = false;
+        public bool ShowAddProjectForm
+        {
+            get => _showAddProjectForm;
+            set => SetProperty(ref _showAddProjectForm, value);
+        }
+
+        // NEW: Properties for display counts
+        public string TaskCount => $"{ToDos.Count}";
+        public string ProjectCount => $"{Projects.Count}";
+
         // Properties for new ToDo creation
         private string _newToDoName = string.Empty;
         public string NewToDoName
@@ -41,14 +60,13 @@ namespace Asana.Maui.ViewModels
             set
             {
                 SetProperty(ref _newToDoPriority, value);
-                // Update button colors when priority changes
                 OnPropertyChanged(nameof(Priority1Color));
                 OnPropertyChanged(nameof(Priority2Color));
                 OnPropertyChanged(nameof(Priority3Color));
             }
         }
 
-        // FIXED: Priority button colors
+        // Priority button colors
         public Color Priority1Color => NewToDoPriority == 1 ? Colors.DarkGray : Colors.LightGray;
         public Color Priority2Color => NewToDoPriority == 2 ? Colors.DarkGray : Colors.LightGray;
         public Color Priority3Color => NewToDoPriority == 3 ? Colors.DarkGray : Colors.LightGray;
@@ -101,7 +119,7 @@ namespace Asana.Maui.ViewModels
             set
             {
                 SetProperty(ref _selectedProjectForNewToDo, value);
-                OnPropertyChanged(nameof(SelectedProjectDisplay)); // Update button text
+                OnPropertyChanged(nameof(SelectedProjectDisplay));
             }
         }
 
@@ -116,9 +134,6 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // For Picker - Priority options (keeping this in case you want to switch back)
-        public List<int> PriorityOptions { get; } = new List<int> { 1, 2, 3 };
-
         // Commands
         public ICommand AddToDoCommand { get; }
         public ICommand DeleteToDoCommand { get; }
@@ -129,6 +144,10 @@ namespace Asana.Maui.ViewModels
         public ICommand SetPriorityCommand { get; }
         public ICommand ShowProjectSelectorCommand { get; }
         public ICommand EditToDoCommand { get; }
+
+        // NEW: Toggle form commands
+        public ICommand ToggleAddTaskFormCommand { get; }
+        public ICommand ToggleAddProjectFormCommand { get; }
 
         public MainPageViewModel()
         {
@@ -147,10 +166,35 @@ namespace Asana.Maui.ViewModels
             RefreshCommand = new Command(RefreshData);
             SetPriorityCommand = new Command<string>(SetPriority);
             ShowProjectSelectorCommand = new Command(async () => await ShowProjectSelector());
-            EditToDoCommand = new Command<ToDo>(async (todo) => await EditToDo(todo)); // FIXED: Initialize edit command
+            EditToDoCommand = new Command<ToDo>(async (todo) => await EditToDo(todo));
+
+            // NEW: Initialize toggle commands
+            ToggleAddTaskFormCommand = new Command(ToggleAddTaskForm);
+            ToggleAddProjectFormCommand = new Command(ToggleAddProjectForm);
 
             // Load initial data
             RefreshData();
+        }
+
+        // NEW: Toggle form methods
+        private void ToggleAddTaskForm()
+        {
+            ShowAddTaskForm = !ShowAddTaskForm;
+            // Hide project form if task form is shown
+            if (ShowAddTaskForm)
+            {
+                ShowAddProjectForm = false;
+            }
+        }
+
+        private void ToggleAddProjectForm()
+        {
+            ShowAddProjectForm = !ShowAddProjectForm;
+            // Hide task form if project form is shown
+            if (ShowAddProjectForm)
+            {
+                ShowAddTaskForm = false;
+            }
         }
 
         // Priority button method
@@ -162,7 +206,113 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // NEW: Edit ToDo method
+        private bool CanAddToDo()
+        {
+            return !string.IsNullOrWhiteSpace(NewToDoName);
+        }
+
+        // UPDATED: Add ToDo and hide form
+        private void AddToDo()
+        {
+            try
+            {
+                if (!CanAddToDo()) return;
+
+                var newToDo = new ToDo
+                {
+                    Id = 0,
+                    Name = NewToDoName,
+                    Description = NewToDoDescription ?? string.Empty,
+                    Priority = NewToDoPriority,
+                    DueDate = NewToDoDueDate,
+                    IsComplete = false,
+                    ProjectId = null
+                };
+
+                var createdToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
+                if (createdToDo != null)
+                {
+                    // Assign to project if one is selected
+                    if (SelectedProjectForNewToDo != null)
+                    {
+                        _toDoSvc.AssignToDoToProject(createdToDo.Id, SelectedProjectForNewToDo.Id);
+                    }
+
+                    // Clear input fields
+                    ClearTaskInputs();
+
+                    // Hide form after successful creation
+                    ShowAddTaskForm = false;
+
+                    // Refresh data
+                    RefreshData();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error adding ToDo: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw;
+            }
+        }
+
+        private bool CanAddProject()
+        {
+            return !string.IsNullOrWhiteSpace(NewProjectName);
+        }
+
+        // UPDATED: Add Project and hide form
+        private void AddProject()
+        {
+            try
+            {
+                if (!CanAddProject()) return;
+
+                var newProject = new Project
+                {
+                    Id = 0,
+                    Name = NewProjectName,
+                    Description = NewProjectDescription,
+                    CompletePercent = 0
+                };
+
+                var createdProject = _toDoSvc.AddOrUpdateProject(newProject);
+                if (createdProject != null)
+                {
+                    // Clear input fields
+                    ClearProjectInputs();
+
+                    // Hide form after successful creation
+                    ShowAddProjectForm = false;
+
+                    // Refresh data
+                    RefreshData();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error adding Project: {ex.Message}");
+                throw;
+            }
+        }
+
+        // NEW: Helper methods to clear inputs
+        private void ClearTaskInputs()
+        {
+            NewToDoName = string.Empty;
+            NewToDoDescription = string.Empty;
+            NewToDoPriority = 1;
+            NewToDoDueDate = DateTime.Now.AddDays(7);
+            SelectedProjectForNewToDo = null;
+        }
+
+        private void ClearProjectInputs()
+        {
+            NewProjectName = string.Empty;
+            NewProjectDescription = string.Empty;
+        }
+
+        // Edit ToDo method
         private async Task EditToDo(ToDo? todo)
         {
             if (todo == null) return;
@@ -212,7 +362,6 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // NEW: Project editing (reuses your existing project selector logic)
         private async Task EditToDoProject(ToDo todo)
         {
             var projectNames = new List<string> { "No Project" };
@@ -249,7 +398,6 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // NEW: Simple text editing
         private async Task EditToDoName(ToDo todo)
         {
             if (Application.Current?.MainPage != null)
@@ -277,7 +425,7 @@ namespace Asana.Maui.ViewModels
                     "Enter new description:",
                     initialValue: todo.Description);
 
-                if (result != null) // Allow empty descriptions
+                if (result != null)
                 {
                     todo.Description = result;
                     _toDoSvc.AddOrUpdateToDo(todo);
@@ -286,7 +434,6 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // NEW: Priority editing
         private async Task EditToDoPriority(ToDo todo)
         {
             if (Application.Current?.MainPage != null)
@@ -310,7 +457,6 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // NEW: Due date editing  
         private async Task EditToDoDueDate(ToDo todo)
         {
             if (Application.Current?.MainPage != null)
@@ -329,20 +475,18 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // Project selector method
         private async Task ShowProjectSelector()
         {
             try
             {
-                var projectNames = new List<string> { "No Project" }; // Always include "No Project"
+                var projectNames = new List<string> { "No Project" };
 
-                // Add existing projects
                 foreach (var project in Projects)
                 {
                     projectNames.Add(project.Name ?? "Unnamed Project");
                 }
 
-                if (projectNames.Count == 1) // Only "No Project" exists
+                if (projectNames.Count == 1)
                 {
                     if (Application.Current?.MainPage != null)
                     {
@@ -352,7 +496,6 @@ namespace Asana.Maui.ViewModels
                     return;
                 }
 
-                // Show action sheet
                 if (Application.Current?.MainPage != null)
                 {
                     var selectedProjectName = await Application.Current.MainPage.DisplayActionSheet(
@@ -369,7 +512,6 @@ namespace Asana.Maui.ViewModels
                         }
                         else
                         {
-                            // Find the selected project
                             SelectedProjectForNewToDo = Projects.FirstOrDefault(p => p.Name == selectedProjectName);
                         }
                     }
@@ -386,61 +528,9 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        private bool CanAddToDo()
-        {
-            return !string.IsNullOrWhiteSpace(NewToDoName);
-        }
-
-        private void AddToDo()
-        {
-            try
-            {
-                if (!CanAddToDo()) return;
-
-                var newToDo = new ToDo
-                {
-                    Id = 0, // Will be set by service
-                    Name = NewToDoName,
-                    Description = NewToDoDescription ?? string.Empty,
-                    Priority = NewToDoPriority,
-                    DueDate = NewToDoDueDate,
-                    IsComplete = false,
-                    ProjectId = null
-                };
-
-                var createdToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
-                if (createdToDo != null)
-                {
-                    // Assign to project if one is selected
-                    if (SelectedProjectForNewToDo != null)
-                    {
-                        _toDoSvc.AssignToDoToProject(createdToDo.Id, SelectedProjectForNewToDo.Id);
-                    }
-
-                    // Clear input fields
-                    NewToDoName = string.Empty;
-                    NewToDoDescription = string.Empty;
-                    NewToDoPriority = 1; // This will also update the button colors
-                    NewToDoDueDate = DateTime.Now.AddDays(7);
-                    SelectedProjectForNewToDo = null;
-
-                    // Refresh data to show new ToDo
-                    RefreshData();
-                }
-            }
-            catch (Exception ex)
-            {
-                // This will help us see what's causing the crash
-                System.Diagnostics.Debug.WriteLine($"Error adding ToDo: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                throw; // Re-throw to see the error
-            }
-        }
-
         private void DeleteToDo(ToDo? toDo)
         {
             if (toDo == null) return;
-
             _toDoSvc.DeleteToDo(toDo);
             RefreshData();
         }
@@ -448,55 +538,15 @@ namespace Asana.Maui.ViewModels
         private void ToggleToDoComplete(ToDo? toDo)
         {
             if (toDo == null) return;
-
             toDo.IsComplete = !toDo.IsComplete;
             _toDoSvc.AddOrUpdateToDo(toDo);
             RefreshData();
         }
 
-        private bool CanAddProject()
-        {
-            return !string.IsNullOrWhiteSpace(NewProjectName);
-        }
-
-        private void AddProject()
-        {
-            if (!CanAddProject()) return;
-
-            var newProject = new Project
-            {
-                Id = 0, // Will be set by service
-                Name = NewProjectName,
-                Description = NewProjectDescription,
-                CompletePercent = 0
-            };
-
-            var createdProject = _toDoSvc.AddOrUpdateProject(newProject);
-            if (createdProject != null)
-            {
-                // Clear input fields
-                NewProjectName = string.Empty;
-                NewProjectDescription = string.Empty;
-
-                // Refresh data to show new Project
-                RefreshData();
-            }
-        }
-
         private void DeleteProject(Project? project)
         {
             if (project == null) return;
-
             _toDoSvc.DeleteProject(project);
-            RefreshData();
-        }
-
-        public void AssignToDoToProject(ToDo toDo, Project? project)
-        {
-            if (toDo == null) return;
-
-            int? projectId = project?.Id;
-            _toDoSvc.AssignToDoToProject(toDo.Id, projectId);
             RefreshData();
         }
 
@@ -506,7 +556,6 @@ namespace Asana.Maui.ViewModels
             ToDos.Clear();
             foreach (var todo in _toDoSvc.ToDos)
             {
-                // Set the project display name
                 if (todo.ProjectId.HasValue)
                 {
                     var project = _toDoSvc.GetProjectById(todo.ProjectId);
@@ -516,7 +565,6 @@ namespace Asana.Maui.ViewModels
                 {
                     todo.ProjectDisplayName = "";
                 }
-
                 ToDos.Add(todo);
             }
 
@@ -526,21 +574,10 @@ namespace Asana.Maui.ViewModels
             {
                 Projects.Add(project);
             }
-        }
 
-        // Helper method to get ToDos for a specific project
-        public ObservableCollection<ToDo> GetToDosByProject(int projectId)
-        {
-            var projectToDos = _toDoSvc.GetToDosByProject(projectId);
-            return new ObservableCollection<ToDo>(projectToDos);
-        }
-
-        // Helper method to get project name for a ToDo
-        public string GetProjectNameForToDo(int? projectId)
-        {
-            if (!projectId.HasValue) return "";
-            var project = _toDoSvc.GetProjectById(projectId);
-            return project?.Name ?? "Unknown Project";
+            // Update count displays
+            OnPropertyChanged(nameof(TaskCount));
+            OnPropertyChanged(nameof(ProjectCount));
         }
 
         // INotifyPropertyChanged implementation
