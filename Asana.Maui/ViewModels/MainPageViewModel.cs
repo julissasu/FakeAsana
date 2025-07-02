@@ -9,9 +9,9 @@ namespace Asana.Maui.ViewModels
 {
     public class MainPageViewModel : INotifyPropertyChanged
     {
-        private readonly ToDoServiceProxy _toDoSvc;
+        private ToDoServiceProxy _toDoSvc;
 
-        // Collections for REQUIRED ListView controls
+        // Collections for ListView controls
         public ObservableCollection<ToDo> ToDos { get; set; }
         public ObservableCollection<Project> Projects { get; set; }
 
@@ -78,7 +78,7 @@ namespace Asana.Maui.ViewModels
             set => SetProperty(ref _newProjectDescription, value);
         }
 
-        // SIMPLE BUTTON APPROACH: Display selected project name
+        // Display selected project name
         public string SelectedProjectDisplay
         {
             get
@@ -127,7 +127,7 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // ORIGINAL WORKING LOGIC: Simple add todo
+        // Add new ToDo item
         private void AddToDo()
         {
             if (string.IsNullOrWhiteSpace(NewToDoName)) return;
@@ -144,7 +144,7 @@ namespace Asana.Maui.ViewModels
 
             var createdToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
 
-            // ORIGINAL LOGIC: Assign to project if one is selected
+            // Assign to project if one is selected
             if (createdToDo != null && SelectedProjectForNewToDo != null)
             {
                 _toDoSvc.AssignToDoToProject(createdToDo.Id, SelectedProjectForNewToDo.Id);
@@ -155,6 +155,7 @@ namespace Asana.Maui.ViewModels
             RefreshData();
         }
 
+        // Add new Project
         private void AddProject()
         {
             if (string.IsNullOrWhiteSpace(NewProjectName)) return;
@@ -167,7 +168,9 @@ namespace Asana.Maui.ViewModels
                 CompletePercent = 0
             };
 
-            _toDoSvc.AddOrUpdateProject(newProject);
+            _toDoSvc.AddOrUpdateProject(newProject);    // Save the project
+
+            // Clear form and refresh
             ClearProjectForm();
             RefreshData();
         }
@@ -196,7 +199,7 @@ namespace Asana.Maui.ViewModels
             OnPropertyChanged(nameof(SelectedProjectDisplay));
         }
 
-        // SIMPLE PROJECT SELECTOR using DisplayActionSheet
+        // Show project selector for assigning ToDos
         private async void ShowProjectSelector()
         {
             if (Projects.Count == 0)
@@ -237,7 +240,7 @@ namespace Asana.Maui.ViewModels
             NewProjectDescription = string.Empty;
         }
 
-        // ORIGINAL APPROACH: Simple refresh
+        // Refresh data for ToDos and Projects
         public void RefreshData()
         {
             // Update ToDos
@@ -256,7 +259,7 @@ namespace Asana.Maui.ViewModels
                 ToDos.Add(todo);
             }
 
-            // Update Projects - simple approach
+            // Update Projects
             Projects.Clear();
             foreach (var project in _toDoSvc.Projects)
             {
@@ -270,6 +273,7 @@ namespace Asana.Maui.ViewModels
         // INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // Helper method to set properties and raise PropertyChanged event
         protected bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "")
         {
             if (EqualityComparer<T>.Default.Equals(backingStore, value))
@@ -280,6 +284,7 @@ namespace Asana.Maui.ViewModels
             return true;
         }
 
+        // Method to raise PropertyChanged event
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

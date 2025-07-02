@@ -40,12 +40,12 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // Priority button colors (simple visual feedback)
+        // Priority button colors 
         public Color Priority1Color => Priority == 1 ? Colors.Blue : Colors.LightGray;
         public Color Priority2Color => Priority == 2 ? Colors.Blue : Colors.LightGray;
         public Color Priority3Color => Priority == 3 ? Colors.Blue : Colors.LightGray;
 
-        // REQUIRED: DatePicker property
+        // DatePicker property
         private DateTime _dueDate = DateTime.Now;
         public DateTime DueDate
         {
@@ -53,7 +53,7 @@ namespace Asana.Maui.ViewModels
             set => SetProperty(ref _dueDate, value);
         }
 
-        // REQUIRED: Picker for project selection
+        // Picker for project selection
         public ObservableCollection<Project> AvailableProjects { get; set; }
 
         private Project? _selectedProject;
