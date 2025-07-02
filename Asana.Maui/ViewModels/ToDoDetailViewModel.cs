@@ -7,11 +7,36 @@ using System.Windows.Input;
 
 namespace Asana.Maui.ViewModels
 {
+    [QueryProperty(nameof(ToDoId), "todoId")]
     public class ToDoDetailViewModel : INotifyPropertyChanged
     {
         private readonly ToDoServiceProxy _toDoSvc;
+        private int _todoId = 0;
+        private bool _isEditMode = false;
 
-        // REQUIRED: Properties for Entry controls
+        // Query parameter for editing
+        public int ToDoId
+        {
+            get => _todoId;
+            set
+            {
+                _todoId = value;
+                if (_todoId > 0)
+                {
+                    LoadToDoForEdit(_todoId);
+                }
+            }
+        }
+
+        // Page title
+        private string _pageTitle = "Create Task";
+        public string PageTitle
+        {
+            get => _pageTitle;
+            set => SetProperty(ref _pageTitle, value);
+        }
+
+        // Entry properties
         private string _name = string.Empty;
         public string Name
         {
@@ -40,7 +65,7 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // Priority button colors 
+        // Priority button colors
         public Color Priority1Color => Priority == 1 ? Colors.Blue : Colors.LightGray;
         public Color Priority2Color => Priority == 2 ? Colors.Blue : Colors.LightGray;
         public Color Priority3Color => Priority == 3 ? Colors.Blue : Colors.LightGray;
@@ -66,6 +91,7 @@ namespace Asana.Maui.ViewModels
         // Commands
         public ICommand SaveCommand { get; }
         public ICommand SetPriorityCommand { get; }
+        public ICommand CancelCommand { get; }
 
         public ToDoDetailViewModel()
         {
@@ -77,6 +103,7 @@ namespace Asana.Maui.ViewModels
             // Initialize commands
             SaveCommand = new Command(SaveToDo);
             SetPriorityCommand = new Command<string>(SetPriority);
+            CancelCommand = new Command(Cancel);
 
             // Load projects for picker
             LoadProjects();
@@ -94,6 +121,34 @@ namespace Asana.Maui.ViewModels
             {
                 AvailableProjects.Add(project);
             }
+
+            // Set default selection
+            SelectedProject = AvailableProjects.FirstOrDefault();
+        }
+
+        private void LoadToDoForEdit(int todoId)
+        {
+            var todo = _toDoSvc.GetToDoById(todoId);
+            if (todo != null)
+            {
+                _isEditMode = true;
+                PageTitle = "Edit Task";
+
+                Name = todo.Name ?? string.Empty;
+                Description = todo.Description ?? string.Empty;
+                Priority = todo.Priority;
+                DueDate = todo.DueDate;
+
+                // Set selected project
+                if (todo.ProjectId.HasValue)
+                {
+                    SelectedProject = AvailableProjects.FirstOrDefault(p => p.Id == todo.ProjectId.Value);
+                }
+                else
+                {
+                    SelectedProject = AvailableProjects.FirstOrDefault(); // "No Project"
+                }
+            }
         }
 
         private void SetPriority(string priorityStr)
@@ -106,7 +161,7 @@ namespace Asana.Maui.ViewModels
 
         private async void SaveToDo()
         {
-            // Basic validation
+            // Validation
             if (string.IsNullOrWhiteSpace(Name))
             {
                 if (Application.Current?.MainPage != null)
@@ -116,43 +171,53 @@ namespace Asana.Maui.ViewModels
                 return;
             }
 
-            // Create new ToDo
-            var newToDo = new ToDo
+            if (_isEditMode)
             {
-                Id = 0, // Service will assign ID
-                Name = Name,
-                Description = Description,
-                Priority = Priority,
-                DueDate = DueDate,
-                IsComplete = false
-            };
+                // Update existing ToDo
+                var existingToDo = _toDoSvc.GetToDoById(_todoId);
+                if (existingToDo != null)
+                {
+                    existingToDo.Name = Name;
+                    existingToDo.Description = Description;
+                    existingToDo.Priority = Priority;
+                    existingToDo.DueDate = DueDate;
 
-            // Save the ToDo
-            var savedToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
+                    _toDoSvc.AddOrUpdateToDo(existingToDo);
 
-            // Assign to project if selected (and not "No Project")
-            if (savedToDo != null && SelectedProject != null && SelectedProject.Id > 0)
+                    // Update project assignment
+                    var newProjectId = SelectedProject?.Id > 0 ? SelectedProject.Id : (int?)null;
+                    _toDoSvc.AssignToDoToProject(_todoId, newProjectId);
+                }
+            }
+            else
             {
-                _toDoSvc.AssignToDoToProject(savedToDo.Id, SelectedProject.Id);
+                // Create new ToDo
+                var newToDo = new ToDo
+                {
+                    Id = 0,
+                    Name = Name,
+                    Description = Description,
+                    Priority = Priority,
+                    DueDate = DueDate,
+                    IsComplete = false
+                };
+
+                var savedToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
+
+                // Assign to project if selected
+                if (savedToDo != null && SelectedProject != null && SelectedProject.Id > 0)
+                {
+                    _toDoSvc.AssignToDoToProject(savedToDo.Id, SelectedProject.Id);
+                }
             }
 
-            // Clear form
-            ClearForm();
-
-            // Show success message
-            if (Application.Current?.MainPage != null)
-            {
-                await Application.Current.MainPage.DisplayAlert("Success", "Task created successfully!", "OK");
-            }
+            // Navigate back
+            await Shell.Current.GoToAsync("..");
         }
 
-        private void ClearForm()
+        private async void Cancel()
         {
-            Name = string.Empty;
-            Description = string.Empty;
-            Priority = 1;
-            DueDate = DateTime.Now;
-            SelectedProject = AvailableProjects.FirstOrDefault(); // Reset to "No Project"
+            await Shell.Current.GoToAsync("..");
         }
 
         // INotifyPropertyChanged implementation

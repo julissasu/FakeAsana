@@ -7,27 +7,20 @@ using System.Windows.Input;
 
 namespace Asana.Maui.ViewModels
 {
-    public class ProjectsPageViewModel : INotifyPropertyChanged
+    public class ProjectsViewModel : INotifyPropertyChanged
     {
         private readonly ToDoServiceProxy _toDoSvc;
 
         // ListView data source
         public ObservableCollection<Project> Projects { get; set; }
 
-        // Selected project for operations
-        private Project? _selectedProject;
-        public Project? SelectedProject
-        {
-            get => _selectedProject;
-            set => SetProperty(ref _selectedProject, value);
-        }
-
         // Commands
         public ICommand RefreshCommand { get; }
         public ICommand DeleteProjectCommand { get; }
-        public ICommand ViewProjectDetailsCommand { get; }
+        public ICommand EditProjectCommand { get; }
+        public ICommand ViewProjectTasksCommand { get; }
 
-        public ProjectsPageViewModel()
+        public ProjectsViewModel()
         {
             _toDoSvc = ToDoServiceProxy.Current;
 
@@ -37,7 +30,8 @@ namespace Asana.Maui.ViewModels
             // Initialize commands
             RefreshCommand = new Command(RefreshProjects);
             DeleteProjectCommand = new Command<Project>(DeleteProject);
-            ViewProjectDetailsCommand = new Command<Project>(ViewProjectDetails);
+            EditProjectCommand = new Command<Project>(EditProject);
+            ViewProjectTasksCommand = new Command<Project>(ViewProjectTasks);
 
             // Load initial data
             RefreshProjects();
@@ -70,12 +64,12 @@ namespace Asana.Maui.ViewModels
         {
             if (project == null) return;
 
-            // Confirm deletion
             if (Application.Current?.MainPage != null)
             {
                 bool confirm = await Application.Current.MainPage.DisplayAlert(
                     "Confirm Delete",
-                    $"Are you sure you want to delete '{project.Name}'?",
+                    $"Are you sure you want to delete '{project.Name}'?\n" +
+                    $"This will unassign all tasks from this project.",
                     "Yes", "No");
 
                 if (confirm)
@@ -86,22 +80,61 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        private async void ViewProjectDetails(Project? project)
+        private async void EditProject(Project? project)
+        {
+            if (project == null) return;
+
+            if (Application.Current?.MainPage != null)
+            {
+                // Simple edit using prompts
+                var newName = await Application.Current.MainPage.DisplayPromptAsync(
+                    "Edit Project",
+                    "Project Name:",
+                    initialValue: project.Name,
+                    maxLength: 50);
+
+                if (!string.IsNullOrWhiteSpace(newName))
+                {
+                    var newDescription = await Application.Current.MainPage.DisplayPromptAsync(
+                        "Edit Project",
+                        "Project Description:",
+                        initialValue: project.Description ?? "",
+                        maxLength: 200);
+
+                    project.Name = newName;
+                    project.Description = newDescription;
+                    _toDoSvc.AddOrUpdateProject(project);
+                    RefreshProjects();
+                }
+            }
+        }
+
+        private async void ViewProjectTasks(Project? project)
         {
             if (project == null) return;
 
             var tasks = _toDoSvc.GetToDosByProject(project.Id);
-            var taskCount = tasks.Count;
-            var completedCount = tasks.Count(t => t.IsComplete);
+            var taskList = "Tasks in this project:\n\n";
+
+            if (tasks.Any())
+            {
+                foreach (var task in tasks)
+                {
+                    var status = task.IsComplete ? "✓" : "○";
+                    var priority = $"P{task.Priority}";
+                    taskList += $"{status} {task.Name} [{priority}] - Due: {task.DueDate:MMM dd}\n";
+                }
+            }
+            else
+            {
+                taskList = "No tasks assigned to this project.";
+            }
 
             if (Application.Current?.MainPage != null)
             {
                 await Application.Current.MainPage.DisplayAlert(
-                    project.Name ?? "Project Details",
-                    $"Description: {project.Description ?? "No description"}\n" +
-                    $"Total Tasks: {taskCount}\n" +
-                    $"Completed: {completedCount}\n" +
-                    $"Progress: {project.CompletePercent}%",
+                    $"{project.Name}",
+                    taskList,
                     "OK");
             }
         }

@@ -9,61 +9,25 @@ namespace Asana.Maui.ViewModels
 {
     public class MainPageViewModel : INotifyPropertyChanged
     {
-        private ToDoServiceProxy _toDoSvc;
+        private readonly ToDoServiceProxy _toDoSvc;
 
-        // Collections for ListView controls
+        // Observable collections for data binding
         public ObservableCollection<ToDo> ToDos { get; set; }
         public ObservableCollection<Project> Projects { get; set; }
 
-        // Task creation properties
-        private string _newToDoName = string.Empty;
-        public string NewToDoName
+        // Show/Hide completed tasks
+        private bool _showCompletedTasks = true;
+        public bool ShowCompletedTasks
         {
-            get => _newToDoName;
-            set => SetProperty(ref _newToDoName, value);
-        }
-
-        private string _newToDoDescription = string.Empty;
-        public string NewToDoDescription
-        {
-            get => _newToDoDescription;
-            set => SetProperty(ref _newToDoDescription, value);
-        }
-
-        private int _newToDoPriority = 1;
-        public int NewToDoPriority
-        {
-            get => _newToDoPriority;
+            get => _showCompletedTasks;
             set
             {
-                SetProperty(ref _newToDoPriority, value);
-                OnPropertyChanged(nameof(Priority1Color));
-                OnPropertyChanged(nameof(Priority2Color));
-                OnPropertyChanged(nameof(Priority3Color));
+                SetProperty(ref _showCompletedTasks, value);
+                RefreshData();
             }
         }
 
-        // Priority colors
-        public Color Priority1Color => NewToDoPriority == 1 ? Colors.Blue : Colors.LightGray;
-        public Color Priority2Color => NewToDoPriority == 2 ? Colors.Blue : Colors.LightGray;
-        public Color Priority3Color => NewToDoPriority == 3 ? Colors.Blue : Colors.LightGray;
-
-        private DateTime _newToDoDueDate = DateTime.Now;
-        public DateTime NewToDoDueDate
-        {
-            get => _newToDoDueDate;
-            set => SetProperty(ref _newToDoDueDate, value);
-        }
-
-        // ORIGINAL APPROACH: Simple project selection
-        private Project? _selectedProjectForNewToDo;
-        public Project? SelectedProjectForNewToDo
-        {
-            get => _selectedProjectForNewToDo;
-            set => SetProperty(ref _selectedProjectForNewToDo, value);
-        }
-
-        // Project creation properties
+        // Properties for new Project creation (keep it simple in main page)
         private string _newProjectName = string.Empty;
         public string NewProjectName
         {
@@ -78,25 +42,14 @@ namespace Asana.Maui.ViewModels
             set => SetProperty(ref _newProjectDescription, value);
         }
 
-        // Display selected project name
-        public string SelectedProjectDisplay
-        {
-            get
-            {
-                if (SelectedProjectForNewToDo == null)
-                    return "Select Project (Optional)";
-                return SelectedProjectForNewToDo.Name ?? "Unnamed Project";
-            }
-        }
-
         // Commands
-        public ICommand AddToDoCommand { get; }
-        public ICommand AddProjectCommand { get; }
-        public ICommand DeleteToDoCommand { get; }
-        public ICommand DeleteProjectCommand { get; }
-        public ICommand SetPriorityCommand { get; }
         public ICommand RefreshCommand { get; }
-        public ICommand ShowProjectSelectorCommand { get; }
+        public ICommand DeleteToDoCommand { get; }
+        public ICommand ToggleToDoCompleteCommand { get; }
+        public ICommand NavigateToCreateToDoCommand { get; }
+        public ICommand NavigateToEditToDoCommand { get; }
+        public ICommand NavigateToProjectsCommand { get; }
+        public ICommand AddProjectCommand { get; }
 
         public MainPageViewModel()
         {
@@ -107,150 +60,34 @@ namespace Asana.Maui.ViewModels
             Projects = new ObservableCollection<Project>();
 
             // Initialize commands
-            AddToDoCommand = new Command(AddToDo);
-            AddProjectCommand = new Command(AddProject);
-            DeleteToDoCommand = new Command<ToDo>(DeleteToDo);
-            DeleteProjectCommand = new Command<Project>(DeleteProject);
-            SetPriorityCommand = new Command<string>(SetPriority);
             RefreshCommand = new Command(RefreshData);
-            ShowProjectSelectorCommand = new Command(ShowProjectSelector);
+            DeleteToDoCommand = new Command<ToDo>(DeleteToDo);
+            ToggleToDoCompleteCommand = new Command<ToDo>(ToggleToDoComplete);
+            NavigateToCreateToDoCommand = new Command(NavigateToCreateToDo);
+            NavigateToEditToDoCommand = new Command<ToDo>(NavigateToEditToDo);
+            NavigateToProjectsCommand = new Command(NavigateToProjects);
+            AddProjectCommand = new Command(AddProject);
 
             // Load initial data
             RefreshData();
         }
 
-        private void SetPriority(string priorityStr)
-        {
-            if (int.TryParse(priorityStr, out int priority))
-            {
-                NewToDoPriority = priority;
-            }
-        }
-
-        // Add new ToDo item
-        private void AddToDo()
-        {
-            if (string.IsNullOrWhiteSpace(NewToDoName)) return;
-
-            var newToDo = new ToDo
-            {
-                Id = 0,
-                Name = NewToDoName,
-                Description = NewToDoDescription,
-                Priority = NewToDoPriority,
-                DueDate = NewToDoDueDate,
-                IsComplete = false
-            };
-
-            var createdToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
-
-            // Assign to project if one is selected
-            if (createdToDo != null && SelectedProjectForNewToDo != null)
-            {
-                _toDoSvc.AssignToDoToProject(createdToDo.Id, SelectedProjectForNewToDo.Id);
-            }
-
-            // Clear form and refresh
-            ClearTaskForm();
-            RefreshData();
-        }
-
-        // Add new Project
-        private void AddProject()
-        {
-            if (string.IsNullOrWhiteSpace(NewProjectName)) return;
-
-            var newProject = new Project
-            {
-                Id = 0,
-                Name = NewProjectName,
-                Description = NewProjectDescription,
-                CompletePercent = 0
-            };
-
-            _toDoSvc.AddOrUpdateProject(newProject);    // Save the project
-
-            // Clear form and refresh
-            ClearProjectForm();
-            RefreshData();
-        }
-
-        private void DeleteToDo(ToDo? toDo)
-        {
-            if (toDo == null) return;
-            _toDoSvc.DeleteToDo(toDo);
-            RefreshData();
-        }
-
-        private void DeleteProject(Project? project)
-        {
-            if (project == null) return;
-            _toDoSvc.DeleteProject(project);
-            RefreshData();
-        }
-
-        private void ClearTaskForm()
-        {
-            NewToDoName = string.Empty;
-            NewToDoDescription = string.Empty;
-            NewToDoPriority = 1;
-            NewToDoDueDate = DateTime.Now;
-            SelectedProjectForNewToDo = null; // Clear selection
-            OnPropertyChanged(nameof(SelectedProjectDisplay));
-        }
-
-        // Show project selector for assigning ToDos
-        private async void ShowProjectSelector()
-        {
-            if (Projects.Count == 0)
-            {
-                if (Application.Current?.MainPage != null)
-                {
-                    await Application.Current.MainPage.DisplayAlert("No Projects", "Create a project first.", "OK");
-                }
-                return;
-            }
-
-            var projectNames = new List<string> { "No Project" };
-            projectNames.AddRange(Projects.Select(p => p.Name ?? "Unnamed Project"));
-
-            if (Application.Current?.MainPage != null)
-            {
-                var selectedProjectName = await Application.Current.MainPage.DisplayActionSheet(
-                    "Select Project", "Cancel", null, projectNames.ToArray());
-
-                if (selectedProjectName != null && selectedProjectName != "Cancel")
-                {
-                    if (selectedProjectName == "No Project")
-                    {
-                        SelectedProjectForNewToDo = null;
-                    }
-                    else
-                    {
-                        SelectedProjectForNewToDo = Projects.FirstOrDefault(p => p.Name == selectedProjectName);
-                    }
-                    OnPropertyChanged(nameof(SelectedProjectDisplay));
-                }
-            }
-        }
-
-        private void ClearProjectForm()
-        {
-            NewProjectName = string.Empty;
-            NewProjectDescription = string.Empty;
-        }
-
-        // Refresh data for ToDos and Projects
         public void RefreshData()
         {
-            // Update ToDos
+            // Update ToDos based on ShowCompletedTasks setting
             ToDos.Clear();
-            foreach (var todo in _toDoSvc.ToDos)
+
+            var todosToShow = _showCompletedTasks
+                ? _toDoSvc.ToDos
+                : _toDoSvc.ToDos.Where(t => !t.IsComplete);
+
+            foreach (var todo in todosToShow)
             {
+                // Set project display name
                 if (todo.ProjectId.HasValue)
                 {
                     var project = _toDoSvc.GetProjectById(todo.ProjectId);
-                    todo.ProjectDisplayName = $"Project: {project?.Name}";
+                    todo.ProjectDisplayName = project?.Name ?? "Unknown Project";
                 }
                 else
                 {
@@ -265,15 +102,90 @@ namespace Asana.Maui.ViewModels
             {
                 Projects.Add(project);
             }
+        }
 
-            // Update project display
-            OnPropertyChanged(nameof(SelectedProjectDisplay));
+        private async void DeleteToDo(ToDo? toDo)
+        {
+            if (toDo == null) return;
+
+            if (Application.Current?.MainPage != null)
+            {
+                bool confirm = await Application.Current.MainPage.DisplayAlert(
+                    "Confirm Delete",
+                    $"Are you sure you want to delete '{toDo.Name}'?",
+                    "Yes", "No");
+
+                if (confirm)
+                {
+                    _toDoSvc.DeleteToDo(toDo);
+                    RefreshData();
+                }
+            }
+        }
+
+        private void ToggleToDoComplete(ToDo? toDo)
+        {
+            if (toDo == null) return;
+
+            toDo.IsComplete = !toDo.IsComplete;
+            _toDoSvc.AddOrUpdateToDo(toDo);
+
+            // If we're hiding completed tasks and this task is now complete, refresh
+            if (!ShowCompletedTasks && toDo.IsComplete)
+            {
+                RefreshData();
+            }
+        }
+
+        // Simple project creation right in main page
+        private async void AddProject()
+        {
+            if (string.IsNullOrWhiteSpace(NewProjectName))
+            {
+                if (Application.Current?.MainPage != null)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Error", "Project name is required", "OK");
+                }
+                return;
+            }
+
+            var newProject = new Project
+            {
+                Id = 0,
+                Name = NewProjectName,
+                Description = NewProjectDescription,
+                CompletePercent = 0
+            };
+
+            _toDoSvc.AddOrUpdateProject(newProject);
+
+            // Clear form
+            NewProjectName = string.Empty;
+            NewProjectDescription = string.Empty;
+
+            RefreshData();
+        }
+
+        // Navigation methods
+        private async void NavigateToCreateToDo()
+        {
+            await Shell.Current.GoToAsync("ToDoDetailView");
+        }
+
+        private async void NavigateToEditToDo(ToDo? toDo)
+        {
+            if (toDo == null) return;
+            await Shell.Current.GoToAsync($"ToDoDetailView?todoId={toDo.Id}");
+        }
+
+        private async void NavigateToProjects()
+        {
+            await Shell.Current.GoToAsync("ProjectsView");
         }
 
         // INotifyPropertyChanged implementation
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        // Helper method to set properties and raise PropertyChanged event
         protected bool SetProperty<T>(ref T backingStore, T value, [CallerMemberName] string propertyName = "")
         {
             if (EqualityComparer<T>.Default.Equals(backingStore, value))
@@ -284,7 +196,6 @@ namespace Asana.Maui.ViewModels
             return true;
         }
 
-        // Method to raise PropertyChanged event
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
