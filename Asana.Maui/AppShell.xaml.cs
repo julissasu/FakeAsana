@@ -1,13 +1,14 @@
-﻿namespace Asana.Maui;
-
-public partial class AppShell : Shell
+﻿namespace Asana.Maui
 {
-	public AppShell()
+	public partial class AppShell : Shell
 	{
-		InitializeComponent();
+		public AppShell()
+		{
+			InitializeComponent();
 
-		// Register routes for navigation
-		Routing.RegisterRoute("ToDoDetailView", typeof(View.ToDoDetailView));
-		Routing.RegisterRoute("ProjectsView", typeof(View.ProjectsView));
+			// Register routes for navigation
+			Routing.RegisterRoute("ToDoDetailView", typeof(ToDoDetailView));
+			Routing.RegisterRoute("ProjectsView", typeof(ProjectsView));
+		}
 	}
 }

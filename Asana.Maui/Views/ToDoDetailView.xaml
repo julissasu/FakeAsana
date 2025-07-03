@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Asana.Maui.ToDoDetailView"
+             Title="ToDo Details"
+             NavigatedFrom="ContentPage_NavigatedFrom"
+             NavigatedTo="ContentPage_NavigatedTo">
+    <ScrollView>
+        <VerticalStackLayout Padding="20"
+                             Spacing="15">
+
+            <!-- ID and Name -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <Label Text="Id:"
+                       Grid.Column="0"
+                       VerticalOptions="Center"/>
+                <Entry Text="{Binding Model.Id}"
+                       Grid.Column="1"
+                       IsReadOnly="True"/>
+                <Label Text="Name:"
+                       Grid.Column="2"
+                       VerticalOptions="Center"/>
+                <Entry Text="{Binding Model.Name}"
+                       Grid.Column="3"/>
+            </Grid>
+
+            <!-- Completion and Priority -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="2*"/>
+                </Grid.ColumnDefinitions>
+                <CheckBox IsChecked="{Binding Model.IsComplete}"
+                          Grid.Column="0"/>
+                <Label Text="Priority:"
+                       Grid.Column="1"
+                       VerticalOptions="Center"/>
+                <Picker ItemsSource="{Binding Priorities}"
+                        SelectedItem="{Binding SelectedPriority}"
+                        Grid.Column="2"/>
+            </Grid>
+
+            <!-- Description -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <Label Text="Description:"
+                       Grid.Column="0"
+                       VerticalOptions="Center"/>
+                <Entry Text="{Binding Model.Description}"
+                       Grid.Column="1"/>
+            </Grid>
+
+            <!-- Due Date -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <Label Text="Due Date:"
+                       Grid.Column="0"
+                       VerticalOptions="Center"/>
+                <DatePicker Date="{Binding Model.DueDate}"
+                            Grid.Column="1"
+                            Format="MMM dd, yyyy"/>
+            </Grid>
+
+            <!-- Project Assignment -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="3*"/>
+                </Grid.ColumnDefinitions>
+                <Label Text="Project:"
+                       Grid.Column="0"
+                       VerticalOptions="Center"/>
+                <Picker ItemsSource="{Binding AvailableProjects}"
+                        SelectedItem="{Binding SelectedProject}"
+                        ItemDisplayBinding="{Binding DisplayName}"
+                        Grid.Column="1"/>
+            </Grid>
+
+            <!-- Action Buttons -->
+            <VerticalStackLayout Spacing="10"
+                                 Margin="0,20,0,0">
+                <Button Text="Save"
+                        Clicked="OkClicked"
+                        BackgroundColor="Green"
+                        TextColor="White"/>
+                <Button Text="Cancel"
+                        Clicked="CancelClicked"
+                        BackgroundColor="Gray"
+                        TextColor="White"/>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

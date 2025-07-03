@@ -1,33 +1,49 @@
 ﻿using Asana.Library.Models;
 using Asana.Maui.ViewModels;
 
-namespace Asana.Maui;
-
-public partial class MainPage : ContentPage
+namespace Asana.Maui
 {
-    private MainPageViewModel _viewModel;
-
-    public MainPage()
+    public partial class MainPage : ContentPage
     {
-        InitializeComponent();
-        _viewModel = new MainPageViewModel();
-        BindingContext = _viewModel;
-    }
-
-    // Handle checkbox changed event for ToDo items
-    private void OnToDoCheckedChanged(object sender, CheckedChangedEventArgs e)
-    {
-        if (sender is CheckBox checkBox && checkBox.BindingContext is ToDo todo)
+        public MainPage()
         {
-            // The ToggleToDoCompleteCommand will handle the logic
-            _viewModel.ToggleToDoCompleteCommand.Execute(todo);
+            InitializeComponent();
+            BindingContext = new MainPageViewModel();
         }
-    }
 
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        // Refresh data when page appears
-        _viewModel.RefreshData();
+        private void AddNewClicked(object sender, EventArgs e)
+        {
+            Shell.Current.GoToAsync("//ToDoDetails");
+        }
+
+        private void EditClicked(object sender, EventArgs e)
+        {
+            var selectedId = (BindingContext as MainPageViewModel)?.SelectedToDoId ?? 0;
+            Shell.Current.GoToAsync($"//ToDoDetails?toDoId={selectedId}");
+        }
+
+        private void DeleteClicked(object sender, EventArgs e)
+        {
+            (BindingContext as MainPageViewModel)?.DeleteToDo();
+        }
+
+        private void ContentPage_NavigatedTo(object sender, NavigatedToEventArgs e)
+        {
+            (BindingContext as MainPageViewModel)?.RefreshPage();
+        }
+
+        private void ContentPage_NavigatedFrom(object sender, NavigatedFromEventArgs e)
+        {
+        }
+
+        private void ProjectClicked(object sender, EventArgs e)
+        {
+            Shell.Current.GoToAsync("//ProjectPage");
+        }
+
+        private void SearchClicked(object sender, EventArgs e)
+        {
+            (BindingContext as MainPageViewModel)?.HandleSearchClick();
+        }
     }
 }

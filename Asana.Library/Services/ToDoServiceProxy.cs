@@ -9,7 +9,6 @@ namespace Asana.Library.Services
 {
     public class ToDoServiceProxy
     {
-        // static data storage
         private List<ToDo> _toDoList;
         private List<Project> _projectList;
 
@@ -45,6 +44,7 @@ namespace Asana.Library.Services
 
         private ToDoServiceProxy()
         {
+            // Start with empty lists
             _toDoList = new List<ToDo>();
             _projectList = new List<Project>();
         }
@@ -63,136 +63,103 @@ namespace Asana.Library.Services
             }
         }
 
-        private int nextToDoKey
-        {
-            get
-            {
-                if (_toDoList.Any())
-                {
-                    return _toDoList.Select(t => t.Id).Max() + 1; // get next ID based on max existing ID
-                }
-                return 1; // start from 1 if no ToDos exist
-            }
-        }
-
-        private int nextProjectKey
-        {
-            get
-            {
-                if (_projectList.Any())
-                {
-                    return _projectList.Select(p => p.Id).Max() + 1; // get next ID based on max existing ID
-                }
-                return 1; // start from 1 if no Projects exist
-            }
-        }
-
         // ToDo methods
-        public ToDo? AddOrUpdateToDo(ToDo? toDo)
+        private int nextToDoId
         {
-            if (toDo != null && toDo.Id == 0)
+            get
             {
-                toDo.Id = nextToDoKey;
+                return _toDoList.Any() ? _toDoList.Max(t => t.Id) + 1 : 1;
+            }
+        }
+
+        public ToDo? AddOrUpdate(ToDo? toDo)
+        {
+            if (toDo == null) return toDo;
+
+            var isNew = toDo.Id == 0;
+
+            if (isNew)
+            {
+                toDo.Id = nextToDoId;
                 _toDoList.Add(toDo);
             }
-            else if (toDo != null)
+            else
             {
-                var existing = _toDoList.FirstOrDefault(t => t.Id == toDo.Id);
-                if (existing != null)
+                var existingToDo = _toDoList.FirstOrDefault(t => t.Id == toDo.Id);
+                if (existingToDo != null)
                 {
-                    existing.Name = toDo.Name;
-                    existing.Description = toDo.Description;
-                    existing.Priority = toDo.Priority;
-                    existing.IsComplete = toDo.IsComplete;
-                    existing.ProjectId = toDo.ProjectId;
-                    existing.DueDate = toDo.DueDate;  // ADD THIS LINE
+                    var index = _toDoList.IndexOf(existingToDo);
+                    _toDoList.RemoveAt(index);
+                    _toDoList.Insert(index, toDo);
                 }
             }
+
             return toDo;
         }
 
-        public ToDo? GetToDoById(int id)
+        public ToDo? AddOrUpdateToDo(ToDo? toDo)
+        {
+            return AddOrUpdate(toDo);
+        }
+
+        public ToDo? GetById(int id)
         {
             return _toDoList.FirstOrDefault(t => t.Id == id);
         }
 
-
-        public void DisplayToDos()
+        public ToDo? GetToDoById(int id)
         {
-            Console.WriteLine("All ToDos:");
-            if (_toDoList.Count == 0)
-            {
-                Console.WriteLine("No ToDos found.");
-            }
-            else
-            {
-                foreach (var t in _toDoList)
-                {
-                    var projectInfo = t.ProjectId.HasValue
-                        ? $" (Project ID: {t.ProjectId})"
-                        : " (No Project)";
+            return GetById(id);
+        }
 
-                    Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Due: {t.DueDate:yyyy-MM-dd} - Complete: {t.IsComplete}{projectInfo}");
-                }
+        public void DeleteToDo(int id)
+        {
+            var toDoToDelete = _toDoList.FirstOrDefault(t => t.Id == id);
+            if (toDoToDelete != null)
+            {
+                _toDoList.Remove(toDoToDelete);
             }
         }
 
         public void DeleteToDo(ToDo? toDo)
         {
-            if (toDo == null) return;
-
-            // Remove from project if assigned
-            var project = _projectList.FirstOrDefault(p => p.Id == toDo.ProjectId);
-            project?.ToDos.Remove(toDo);
-
-            _toDoList.Remove(toDo);
-        }
-
-        public bool AssignToDoToProject(int toDoId, int? projectId)
-        {
-            var toDo = GetToDoById(toDoId);
-            if (toDo == null) return false;
-
-            // Remove from current project
-            var currentProject = _projectList.FirstOrDefault(p => p.Id == toDo.ProjectId);
-            currentProject?.ToDos.Remove(toDo);
-
-            if (projectId.HasValue && projectId > 0)
+            if (toDo != null)
             {
-                var targetProject = GetProjectById(projectId);
-                if (targetProject != null)
-                {
-                    toDo.ProjectId = projectId;
-                    targetProject.ToDos.Add(toDo);
-                    return true;
-                }
-                return false;
-            }
-            else
-            {
-                toDo.ProjectId = null;
-                return true;
+                DeleteToDo(toDo.Id);
             }
         }
 
         // Project methods
+        private int nextProjectId
+        {
+            get
+            {
+                return _projectList.Any() ? _projectList.Max(p => p.Id) + 1 : 1;
+            }
+        }
+
         public Project? AddOrUpdateProject(Project? project)
         {
-            if (project != null && project.Id == 0)
+            if (project == null) return project;
+
+            var isNew = project.Id == 0;
+
+            if (isNew)
             {
-                project.Id = nextProjectKey;
-                project.ToDos = new List<ToDo>();
+                project.Id = nextProjectId;
                 _projectList.Add(project);
             }
-            else if (project != null)
+            else
             {
-                var existing = _projectList.FirstOrDefault(p => p.Id == project.Id);
-                if (existing != null)
+                var existingProject = _projectList.FirstOrDefault(p => p.Id == project.Id);
+                if (existingProject != null)
                 {
-                    existing.Name = project.Name;
-                    existing.Description = project.Description;
+                    var index = _projectList.IndexOf(existingProject);
+                    _projectList.RemoveAt(index);
+                    _projectList.Insert(index, project);
                 }
             }
+
             return project;
         }
 
@@ -202,64 +169,36 @@ namespace Asana.Library.Services
             return _projectList.FirstOrDefault(p => p.Id == id);
         }
 
-        public void DisplayProjects()
-        {
-            Console.WriteLine("All Projects:");
-            if (_projectList.Count == 0)
-            {
-                Console.WriteLine("No projects found.");
-            }
-            else
-            {
-                foreach (var p in _projectList)
-                {
-                    double completed = p.ToDos.Count > 0 ? p.ToDos.Count(td => td.IsComplete) * 100.0 / p.ToDos.Count : 0;
-                    Console.WriteLine($"[{p.Id}] {p.Name} - {p.Description} - Complete: {completed:F1}% ({p.ToDos.Count(td => td.IsComplete)}/{p.ToDos.Count} tasks)");
-                }
-            }
-        }
-
         public void DeleteProject(Project? project)
         {
             if (project == null) return;
 
-            // Unassign all ToDos from this project
-            foreach (var todo in project.ToDos)
+            // Unassign all todos from this project
+            var assignedToDos = _toDoList.Where(t => t.ProjectId == project.Id).ToList();
+            foreach (var todo in assignedToDos)
             {
                 todo.ProjectId = null;
             }
-            _projectList.Remove(project);
-        }
 
-        public void DisplayToDosByProject(int projectId)
-        {
-            var project = GetProjectById(projectId);
-            if (project != null)
-            {
-                Console.WriteLine($"ToDos for project '{project.Name}':");
-                var projectToDos = GetToDosByProject(projectId);
-                if (projectToDos.Count == 0)
-                {
-                    Console.WriteLine("No ToDos assigned to this project.");
-                }
-                else
-                {
-                    foreach (var t in projectToDos)
-                    {
-                        Console.WriteLine($"[{t.Id}] {t.Name} - {t.Description} (Priority {t.Priority}) - Complete: {t.IsComplete}");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Project not found.");
-            }
+            _projectList.Remove(project);
         }
 
         public List<ToDo> GetToDosByProject(int projectId)
         {
-            var project = GetProjectById(projectId);
-            return project?.ToDos.ToList() ?? new List<ToDo>();
+            return _toDoList.Where(t => t.ProjectId == projectId).ToList();
+        }
+
+        // Display methods (following professor's pattern)
+        public void DisplayToDos(bool isShowCompleted = false)
+        {
+            if (isShowCompleted)
+            {
+                _toDoList.ForEach(Console.WriteLine);
+            }
+            else
+            {
+                _toDoList.Where(t => !t.IsComplete).ToList().ForEach(Console.WriteLine);
+            }
         }
     }
 }

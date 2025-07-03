@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Asana.Maui.ProjectsView"
+             Title="Projects"
+             NavigatedTo="ContentPage_NavigatedTo">
+    <VerticalStackLayout Padding="20"
+                         Spacing="15">
+
+        <Label Text="Projects"
+               FontSize="24"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"/>
+
+        <ListView ItemsSource="{Binding Projects}"
+                  SelectedItem="{Binding SelectedProject}"
+                  HeightRequest="300">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid Padding="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <Label Grid.Column="0"
+                                   Grid.Row="0"
+                                   Text="{Binding Model.Id}"
+                                   FontAttributes="Bold"/>
+
+                            <Label Grid.Column="1"
+                                   Grid.Row="0"
+                                   Text="{Binding Model.Name}"
+                                   FontAttributes="Bold"
+                                   TextColor="Green"/>
+
+                            <Label Grid.Column="1"
+                                   Grid.Row="1"
+                                   Text="{Binding Model.Description}"
+                                   FontSize="12"
+                                   TextColor="Gray"/>
+
+                            <Button Grid.Column="2"
+                                    Grid.RowSpan="2"
+                                    Text="Delete"
+                                    Clicked="DeleteProjectClicked"
+                                    BackgroundColor="Red"
+                                    TextColor="White"
+                                    FontSize="12"/>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <VerticalStackLayout Spacing="10">
+            <Button Text="Delete Selected Project"
+                    Clicked="DeleteProjectClicked"/>
+            <Button Text="Back to Tasks"
+                    Clicked="BackToMainClicked"/>
+        </VerticalStackLayout>
+
+    </VerticalStackLayout>
+</ContentPage>

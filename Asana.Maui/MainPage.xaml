@@ -2,257 +2,130 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Asana.Maui.MainPage"
+             NavigatedTo="ContentPage_NavigatedTo"
+             NavigatedFrom="ContentPage_NavigatedFrom"
              Title="Task Manager">
-
-       <Grid RowDefinitions="Auto,Auto,*"
-             Padding="20">
-
-              <!-- Header with Action Buttons and Toggle -->
-              <VerticalStackLayout Grid.Row="0"
-                                   Spacing="15"
-                                   Margin="0,0,0,20">
-
-                     <!-- Action Buttons -->
-                     <HorizontalStackLayout Spacing="15"
-                                            HorizontalOptions="Center">
-                            <Button Text="+ Add Task"
-                                    Command="{Binding NavigateToCreateToDoCommand}"
-                                    BackgroundColor="#007AFF"
-                                    TextColor="White"
-                                    WidthRequest="140"
-                                    HeightRequest="50"
-                                    CornerRadius="25"/>
-
-                            <Button Text="Manage Projects"
-                                    Command="{Binding NavigateToProjectsCommand}"
-                                    BackgroundColor="#FF9500"
-                                    TextColor="White"
-                                    WidthRequest="140"
-                                    HeightRequest="50"
-                                    CornerRadius="25"/>
-                     </HorizontalStackLayout>
-
-                     <!-- Show Completed Tasks Toggle -->
-                     <Frame BackgroundColor="#f0f0f0"
-                            CornerRadius="10"
-                            Padding="10,5"
-                            HorizontalOptions="Center">
-                            <HorizontalStackLayout Spacing="10">
-                                   <Label Text="Show Completed Tasks"
-                                          VerticalOptions="Center"
-                                          FontSize="16"/>
-                                   <CheckBox IsChecked="{Binding ShowCompletedTasks}"
-                                             VerticalOptions="Center"/>
-                            </HorizontalStackLayout>
-                     </Frame>
-              </VerticalStackLayout>
-
-              <!-- Quick Add Project Section -->
-              <Frame Grid.Row="1"
-                     BackgroundColor="White"
-                     CornerRadius="12"
-                     Padding="15"
-                     BorderColor="#e9ecef"
-                     Margin="0,0,0,20">
-                     <VerticalStackLayout Spacing="10">
-                            <Label Text="Quick Add Project"
-                                   FontSize="16"
-                                   FontAttributes="Bold"
-                                   TextColor="#2c3e50"/>
-
-                            <Grid ColumnDefinitions="*,*,Auto"
-                                  ColumnSpacing="10">
-                                   <Entry Grid.Column="0"
-                                          Placeholder="Project Name"
-                                          Text="{Binding NewProjectName}"
-                                          BackgroundColor="#f8f9fa"/>
-
-                                   <Entry Grid.Column="1"
-                                          Placeholder="Description (optional)"
-                                          Text="{Binding NewProjectDescription}"
-                                          BackgroundColor="#f8f9fa"/>
-
-                                   <Button Grid.Column="2"
-                                           Text="Add"
-                                           Command="{Binding AddProjectCommand}"
-                                           BackgroundColor="#34C759"
-                                           TextColor="White"
-                                           WidthRequest="80"
-                                           CornerRadius="8"/>
-                            </Grid>
-                     </VerticalStackLayout>
-              </Frame>
-
-              <!-- Tasks Section -->
-              <Frame Grid.Row="2"
-                     BackgroundColor="White"
-                     CornerRadius="12"
-                     Padding="15"
-                     BorderColor="#e9ecef">
-
+       <ScrollView>
+              <VerticalStackLayout
+                     Padding="20"
+                     Spacing="20">
                      <Grid>
-                            <!-- Empty State Message -->
-                            <Label Text="No tasks yet! Tap '+ Add Task' to create your first task."
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center"
-                                   TextColor="Gray"
-                                   FontSize="16"
-                                   IsVisible="False">
-                                   <Label.Triggers>
-                                          <DataTrigger TargetType="Label"
-                                                       Binding="{Binding ToDos.Count}"
-                                                       Value="0">
-                                                 <Setter Property="IsVisible"
-                                                         Value="True"/>
-                                          </DataTrigger>
-                                   </Label.Triggers>
-                            </Label>
+                            <Grid.RowDefinitions>
+                                   <RowDefinition Height="Auto"/>
+                                   <RowDefinition Height="*"/>
+                                   <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                            <!-- Tasks ListView -->
-                            <VerticalStackLayout>
-                                   <Label Text="My Tasks"
-                                          FontSize="20"
-                                          FontAttributes="Bold"
-                                          TextColor="#2c3e50"
-                                          Margin="0,0,0,10"/>
+                            <!-- Tool Bar-->
+                            <Grid Grid.Row="0"
+                                  RowSpacing="10"
+                                  Padding="0,0,0,10">
+                                   <Grid.ColumnDefinitions>
+                                          <ColumnDefinition Width="2*"/>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="5*"/>
+                                   </Grid.ColumnDefinitions>
+                                   <Label Grid.Column="0"
+                                          Text="Show Completed Tasks:"
+                                          VerticalOptions="Center"
+                                          FontSize="14"/>
+                                   <CheckBox Grid.Column="1"
+                                             IsChecked="{Binding IsShowCompleted}"
+                                             VerticalOptions="Center"
+                                             Margin="10,0"/>
+                                   <Grid Grid.Column="2">
+                                          <Grid.ColumnDefinitions>
+                                                 <ColumnDefinition Width="*"/>
+                                                 <ColumnDefinition Width="Auto"/>
+                                          </Grid.ColumnDefinitions>
+                                          <Entry Grid.Column="0"
+                                                 Text="{Binding Query}"
+                                                 Placeholder="Search tasks..."
+                                                 FontSize="14"/>
+                                          <Button Grid.Column="1"
+                                                  Text="Search"
+                                                  Clicked="SearchClicked"
+                                                  Margin="10,0,0,0"/>
+                                   </Grid>
+                            </Grid>
 
-                                   <ListView ItemsSource="{Binding ToDos}"
-                                             HasUnevenRows="True"
-                                             SeparatorVisibility="None"
-                                             VerticalOptions="FillAndExpand">
+                            <!-- ToDo List-->
+                            <ListView
+                                   Grid.Row="1"
+                                   ItemsSource="{Binding ToDos}"
+                                   SelectedItem="{Binding SelectedToDo}"
+                                   RowHeight="120"
+                                   VerticalOptions="FillAndExpand">
+                                   <ListView.ItemTemplate>
+                                          <DataTemplate>
+                                                 <ViewCell>
+                                                        <Grid Padding="15,10"
+                                                              RowSpacing="8">
+                                                               <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="Auto"/>
+                                                                      <ColumnDefinition Width="*"/>
+                                                               </Grid.ColumnDefinitions>
+                                                               <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="Auto"/>
+                                                                      <RowDefinition Height="Auto"/>
+                                                                      <RowDefinition Height="Auto"/>
+                                                               </Grid.RowDefinitions>
 
-                                          <ListView.ItemTemplate>
-                                                 <DataTemplate>
-                                                        <ViewCell>
-                                                               <Frame Margin="0,5"
-                                                                      Padding="15"
-                                                                      BackgroundColor="#f8f9fa"
-                                                                      BorderColor="#dee2e6"
-                                                                      CornerRadius="10">
-                                                                      <!-- Add opacity for completed tasks -->
-                                                                      <Frame.Triggers>
-                                                                             <DataTrigger TargetType="Frame"
-                                                                                          Binding="{Binding IsComplete}"
-                                                                                          Value="True">
-                                                                                    <Setter Property="Opacity"
-                                                                                            Value="0.6"/>
-                                                                                    <Setter Property="BackgroundColor"
-                                                                                            Value="#e9ecef"/>
-                                                                             </DataTrigger>
-                                                                      </Frame.Triggers>
+                                                               <CheckBox IsChecked="{Binding Model.IsComplete}"
+                                                                         Grid.Column="0"
+                                                                         Grid.RowSpan="3"
+                                                                         VerticalOptions="Center"
+                                                                         Margin="0,0,15,0"/>
 
-                                                                      <Grid ColumnDefinitions="Auto,*,Auto"
-                                                                            RowDefinitions="Auto,Auto,Auto">
+                                                               <Label Grid.Column="1"
+                                                                      Grid.Row="0"
+                                                                      Text="{Binding Model.Name}"
+                                                                      FontAttributes="Bold"
+                                                                      FontSize="16"
+                                                                      TextColor="Red"/>
 
-                                                                             <!-- CheckBox -->
-                                                                             <CheckBox Grid.Row="0"
-                                                                                       Grid.Column="0"
-                                                                                       Grid.RowSpan="3"
-                                                                                       IsChecked="{Binding IsComplete}"
-                                                                                       CheckedChanged="OnToDoCheckedChanged"
-                                                                                       VerticalOptions="Center"/>
+                                                               <Label Grid.Column="1"
+                                                                      Grid.Row="1"
+                                                                      Text="{Binding Model.Description}"
+                                                                      FontSize="14"
+                                                                      TextColor="Gray"
+                                                                      Margin="0,5,0,5"/>
 
-                                                                             <!-- Task Name -->
-                                                                             <Label Grid.Row="0"
-                                                                                    Grid.Column="1"
-                                                                                    Text="{Binding Name}"
-                                                                                    FontSize="16"
-                                                                                    FontAttributes="Bold">
-                                                                                    <Label.Triggers>
-                                                                                           <DataTrigger TargetType="Label"
-                                                                                                        Binding="{Binding IsComplete}"
-                                                                                                        Value="True">
-                                                                                                  <Setter Property="TextDecorations"
-                                                                                                          Value="Strikethrough"/>
-                                                                                                  <Setter Property="TextColor"
-                                                                                                          Value="Gray"/>
-                                                                                           </DataTrigger>
-                                                                                    </Label.Triggers>
-                                                                             </Label>
+                                                               <StackLayout Grid.Column="1"
+                                                                            Grid.Row="2"
+                                                                            Orientation="Horizontal"
+                                                                            Spacing="15">
+                                                                      <Label Text="{Binding Model.Priority, StringFormat='Priority: {0}'}"
+                                                                             FontSize="12"
+                                                                             TextColor="DarkBlue"/>
+                                                                      <Label Text="{Binding Model.DueDate, StringFormat='Due: {0:MMM dd}'}"
+                                                                             FontSize="12"
+                                                                             TextColor="DarkGreen"/>
+                                                                      <Label Text="{Binding ProjectDisplayName}"
+                                                                             FontSize="12"
+                                                                             TextColor="Blue"
+                                                                             IsVisible="{Binding HasProject}"/>
+                                                               </StackLayout>
+                                                        </Grid>
+                                                 </ViewCell>
+                                          </DataTemplate>
+                                   </ListView.ItemTemplate>
+                            </ListView>
 
-                                                                             <!-- Task Description -->
-                                                                             <Label Grid.Row="1"
-                                                                                    Grid.Column="1"
-                                                                                    Text="{Binding Description}"
-                                                                                    FontSize="14"
-                                                                                    TextColor="Gray">
-                                                                                    <Label.Triggers>
-                                                                                           <DataTrigger TargetType="Label"
-                                                                                                        Binding="{Binding IsComplete}"
-                                                                                                        Value="True">
-                                                                                                  <Setter Property="TextDecorations"
-                                                                                                          Value="Strikethrough"/>
-                                                                                           </DataTrigger>
-                                                                                    </Label.Triggers>
-                                                                             </Label>
-
-                                                                             <!-- Task Details -->
-                                                                             <HorizontalStackLayout Grid.Row="2"
-                                                                                                    Grid.Column="1"
-                                                                                                    Spacing="10"
-                                                                                                    Margin="0,5,0,0">
-                                                                                    <Frame BackgroundColor="#e3f2fd"
-                                                                                           Padding="6,3"
-                                                                                           CornerRadius="4"
-                                                                                           HasShadow="False">
-                                                                                           <Label Text="{Binding Priority, StringFormat='Priority {0}'}"
-                                                                                                  FontSize="11"
-                                                                                                  TextColor="#1976d2"/>
-                                                                                    </Frame>
-
-                                                                                    <Frame BackgroundColor="#fff3e0"
-                                                                                           Padding="6,3"
-                                                                                           CornerRadius="4"
-                                                                                           HasShadow="False">
-                                                                                           <Label Text="{Binding DueDate, StringFormat='Due {0:MMM dd}'}"
-                                                                                                  FontSize="11"
-                                                                                                  TextColor="#f57c00"/>
-                                                                                    </Frame>
-
-                                                                                    <Frame BackgroundColor="#f3e5f5"
-                                                                                           Padding="6,3"
-                                                                                           CornerRadius="4"
-                                                                                           HasShadow="False">
-                                                                                           <Label Text="{Binding ProjectDisplayName}"
-                                                                                                  FontSize="11"
-                                                                                                  TextColor="#7b1fa2"/>
-                                                                                    </Frame>
-                                                                             </HorizontalStackLayout>
-
-                                                                             <!-- Action Buttons -->
-                                                                             <VerticalStackLayout Grid.Row="0"
-                                                                                                  Grid.Column="2"
-                                                                                                  Grid.RowSpan="3"
-                                                                                                  Spacing="5"
-                                                                                                  VerticalOptions="Center">
-                                                                                    <Button Text="Edit"
-                                                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, 
-                                                        Path=BindingContext.NavigateToEditToDoCommand}"
-                                                                                            CommandParameter="{Binding .}"
-                                                                                            BackgroundColor="#007AFF"
-                                                                                            TextColor="White"
-                                                                                            FontSize="12"
-                                                                                            Padding="10,5"
-                                                                                            CornerRadius="5"/>
-
-                                                                                    <Button Text="Delete"
-                                                                                            Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, 
-                                                        Path=BindingContext.DeleteToDoCommand}"
-                                                                                            CommandParameter="{Binding .}"
-                                                                                            BackgroundColor="#FF3B30"
-                                                                                            TextColor="White"
-                                                                                            FontSize="12"
-                                                                                            Padding="10,5"
-                                                                                            CornerRadius="5"/>
-                                                                             </VerticalStackLayout>
-                                                                      </Grid>
-                                                               </Frame>
-                                                        </ViewCell>
-                                                 </DataTemplate>
-                                          </ListView.ItemTemplate>
-                                   </ListView>
+                            <!-- Button Bar -->
+                            <VerticalStackLayout Grid.Row="2"
+                                                 Spacing="10"
+                                                 Padding="0,20,0,0">
+                                   <Button Text="Add New ToDo"
+                                           Clicked="AddNewClicked"/>
+                                   <Button Text="Edit Selected ToDo"
+                                           Clicked="EditClicked"/>
+                                   <Button Text="Delete Selected ToDo"
+                                           Clicked="DeleteClicked"/>
+                                   <Button Text="Manage Projects"
+                                           Clicked="ProjectClicked"/>
                             </VerticalStackLayout>
                      </Grid>
-              </Frame>
-       </Grid>
+              </VerticalStackLayout>
+       </ScrollView>
 </ContentPage>
