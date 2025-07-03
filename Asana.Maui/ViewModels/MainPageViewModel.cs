@@ -76,9 +76,9 @@ namespace Asana.Maui.ViewModels
         {
             // Update ToDos based on ShowCompletedTasks setting
             ToDos.Clear();
-
-            var todosToShow = _showCompletedTasks
-                ? _toDoSvc.ToDos
+            
+            var todosToShow = _showCompletedTasks 
+                ? _toDoSvc.ToDos 
                 : _toDoSvc.ToDos.Where(t => !t.IsComplete);
 
             foreach (var todo in todosToShow)
@@ -126,10 +126,10 @@ namespace Asana.Maui.ViewModels
         private void ToggleToDoComplete(ToDo? toDo)
         {
             if (toDo == null) return;
-
+            
             toDo.IsComplete = !toDo.IsComplete;
             _toDoSvc.AddOrUpdateToDo(toDo);
-
+            
             // If we're hiding completed tasks and this task is now complete, refresh
             if (!ShowCompletedTasks && toDo.IsComplete)
             {
@@ -162,7 +162,7 @@ namespace Asana.Maui.ViewModels
             // Clear form
             NewProjectName = string.Empty;
             NewProjectDescription = string.Empty;
-
+            
             RefreshData();
         }
 

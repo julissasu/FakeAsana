@@ -66,9 +66,9 @@ namespace Asana.Maui.ViewModels
         }
 
         // Priority button colors
-        public Color Priority1Color => Priority == 1 ? Colors.Blue : Colors.LightGray;
-        public Color Priority2Color => Priority == 2 ? Colors.Blue : Colors.LightGray;
-        public Color Priority3Color => Priority == 3 ? Colors.Blue : Colors.LightGray;
+        public Color Priority1Color => Priority == 1 ? Color.FromArgb("#007AFF") : Color.FromArgb("#E0E0E0");
+        public Color Priority2Color => Priority == 2 ? Color.FromArgb("#FF9500") : Color.FromArgb("#E0E0E0");
+        public Color Priority3Color => Priority == 3 ? Color.FromArgb("#FF3B30") : Color.FromArgb("#E0E0E0");
 
         // DatePicker property
         private DateTime _dueDate = DateTime.Now;
@@ -171,6 +171,8 @@ namespace Asana.Maui.ViewModels
                 return;
             }
 
+            System.Diagnostics.Debug.WriteLine($"Saving ToDo: {Name}");
+
             if (_isEditMode)
             {
                 // Update existing ToDo
@@ -187,6 +189,8 @@ namespace Asana.Maui.ViewModels
                     // Update project assignment
                     var newProjectId = SelectedProject?.Id > 0 ? SelectedProject.Id : (int?)null;
                     _toDoSvc.AssignToDoToProject(_todoId, newProjectId);
+
+                    System.Diagnostics.Debug.WriteLine($"Updated ToDo ID: {_todoId}");
                 }
             }
             else
@@ -204,10 +208,20 @@ namespace Asana.Maui.ViewModels
 
                 var savedToDo = _toDoSvc.AddOrUpdateToDo(newToDo);
 
-                // Assign to project if selected
-                if (savedToDo != null && SelectedProject != null && SelectedProject.Id > 0)
+                if (savedToDo != null)
                 {
-                    _toDoSvc.AssignToDoToProject(savedToDo.Id, SelectedProject.Id);
+                    System.Diagnostics.Debug.WriteLine($"Created new ToDo with ID: {savedToDo.Id}");
+
+                    // Assign to project if selected
+                    if (SelectedProject != null && SelectedProject.Id > 0)
+                    {
+                        _toDoSvc.AssignToDoToProject(savedToDo.Id, SelectedProject.Id);
+                        System.Diagnostics.Debug.WriteLine($"Assigned to Project ID: {SelectedProject.Id}");
+                    }
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("Failed to create ToDo!");
                 }
             }
 

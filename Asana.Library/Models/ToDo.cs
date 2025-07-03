@@ -14,10 +14,10 @@ namespace Asana.Library.Models
         public string? Name { get; set; }
         public string? Description { get; set; }
         public int Priority { get; set; }
-        
+
         private bool _isComplete;
-        public bool IsComplete 
-        { 
+        public bool IsComplete
+        {
             get => _isComplete;
             set
             {
@@ -25,16 +25,13 @@ namespace Asana.Library.Models
                 {
                     _isComplete = value;
                     OnPropertyChanged();
-                    
-                    // Auto-save when completion status changes
-                    Services.ToDoServiceProxy.Current.AddOrUpdateToDo(this);
                 }
             }
         }
-        
+
         public int? ProjectId { get; set; }
         public DateTime DueDate { get; set; } = DateTime.Now;
-        
+
         // For displaying project names in the UI
         public string ProjectDisplayName { get; set; } = "";
 

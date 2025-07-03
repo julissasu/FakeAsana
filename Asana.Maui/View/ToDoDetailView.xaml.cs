@@ -1,9 +1,13 @@
-namespace Asana.Maui.View;
+using Asana.Maui.ViewModels;
 
-public partial class ToDoDetailView : ContentPage
+namespace Asana.Maui.View
 {
-	public ToDoDetailView()
+	public partial class ToDoDetailView : ContentPage
 	{
-		InitializeComponent();
+		public ToDoDetailView()
+		{
+			InitializeComponent();
+			BindingContext = new ToDoDetailViewModel();
+		}
 	}
 }

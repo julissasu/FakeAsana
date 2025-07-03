@@ -16,15 +16,6 @@
                    FontAttributes="Bold"
                    HorizontalOptions="Center"
                    TextColor="#2c3e50"/>
-
-            <Button Text="Refresh"
-                    Command="{Binding RefreshCommand}"
-                    BackgroundColor="#6c757d"
-                    TextColor="White"
-                    WidthRequest="120"
-                    HeightRequest="40"
-                    CornerRadius="20"
-                    HorizontalOptions="Center"/>
         </VerticalStackLayout>
 
         <!-- Projects ListView -->
@@ -72,12 +63,14 @@
                                            FontSize="12"
                                            TextColor="#007AFF"
                                            Margin="0,5,0,0">
-                                        <Label.Text>
-                                            <MultiBinding StringFormat="{}{0} tasks ({1}% complete)">
-                                                <Binding Path="ToDos.Count"/>
-                                                <Binding Path="CompletePercent"/>
-                                            </MultiBinding>
-                                        </Label.Text>
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding ToDos.Count}"/>
+                                                <Span Text=" tasks ("/>
+                                                <Span Text="{Binding CompletePercent}"/>
+                                                <Span Text="% complete)"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
                                     </Label>
 
                                     <!-- Progress Bar -->
