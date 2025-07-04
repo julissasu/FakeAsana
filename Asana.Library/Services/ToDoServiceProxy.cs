@@ -44,7 +44,7 @@ namespace Asana.Library.Services
 
         private ToDoServiceProxy()
         {
-            // Start with empty lists
+            // Start with empty lists (no web service)
             _toDoList = new List<ToDo>();
             _projectList = new List<Project>();
         }
@@ -188,17 +188,23 @@ namespace Asana.Library.Services
             return _toDoList.Where(t => t.ProjectId == projectId).ToList();
         }
 
-        // Display methods (following professor's pattern)
-        public void DisplayToDos(bool isShowCompleted = false)
+        // Project assignment methods
+        public bool AssignToDoToProject(int toDoId, int? projectId)
         {
-            if (isShowCompleted)
+            var toDo = GetToDoById(toDoId);
+            if (toDo == null) return false;
+
+            if (projectId == null || projectId == 0)
             {
-                _toDoList.ForEach(Console.WriteLine);
+                toDo.ProjectId = null;
+                return true;
             }
-            else
-            {
-                _toDoList.Where(t => !t.IsComplete).ToList().ForEach(Console.WriteLine);
-            }
+
+            var project = GetProjectById(projectId);
+            if (project == null) return false;
+
+            toDo.ProjectId = projectId;
+            return true;
         }
     }
 }

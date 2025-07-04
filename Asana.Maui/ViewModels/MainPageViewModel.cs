@@ -14,6 +14,9 @@ namespace Asana.Maui.ViewModels
         {
             _toDoSvc = ToDoServiceProxy.Current;
             Query = string.Empty;
+
+            // Listen for task completion changes
+            ToDoDetailViewModel.TaskCompletionChanged += RefreshPage;
         }
 
         public ToDoDetailViewModel? SelectedToDo { get; set; }
@@ -28,6 +31,7 @@ namespace Asana.Maui.ViewModels
                 {
                     query = value;
                     NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ToDos)); // Refresh list when query changes
                 }
             }
         }
@@ -62,7 +66,8 @@ namespace Asana.Maui.ViewModels
                 if (isShowCompleted != value)
                 {
                     isShowCompleted = value;
-                    NotifyPropertyChanged(nameof(ToDos));
+                    NotifyPropertyChanged();
+                    NotifyPropertyChanged(nameof(ToDos)); // Refresh list when filter changes
                 }
             }
         }

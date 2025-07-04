@@ -39,6 +39,30 @@ namespace Asana.Maui.ViewModels
         public ToDo? Model { get; set; }
         public ICommand DeleteCommand { get; set; }
 
+        // Wrapper for IsComplete to trigger immediate updates
+        public bool IsComplete
+        {
+            get
+            {
+                return Model?.IsComplete ?? false;
+            }
+            set
+            {
+                if (Model != null && Model.IsComplete != value)
+                {
+                    Model.IsComplete = value;
+                    _toDoSvc.AddOrUpdateToDo(Model); // Save immediately
+                    NotifyPropertyChanged();
+
+                    // Trigger a static event that MainPageViewModel can listen to
+                    TaskCompletionChanged?.Invoke();
+                }
+            }
+        }
+
+        // Static event for notifying other ViewModels
+        public static event Action? TaskCompletionChanged;
+
         // Project display logic
         public string ProjectDisplayName
         {
@@ -77,17 +101,22 @@ namespace Asana.Maui.ViewModels
             }
         }
 
+        private List<ProjectViewModel>? _availableProjects;
+
         // Project selection
         public List<ProjectViewModel> AvailableProjects
         {
             get
             {
-                var projects = new List<ProjectViewModel>
+                if (_availableProjects == null)
                 {
-                    new ProjectViewModel { Model = null } // No Project option
-                };
-                projects.AddRange(_toDoSvc.Projects.Select(p => new ProjectViewModel { Model = p }));
-                return projects;
+                    _availableProjects = new List<ProjectViewModel>
+                    {
+                        new ProjectViewModel { Model = null } // No Project option
+                    };
+                    _availableProjects.AddRange(_toDoSvc.Projects.Select(p => new ProjectViewModel { Model = p }));
+                }
+                return _availableProjects;
             }
         }
 
@@ -95,9 +124,14 @@ namespace Asana.Maui.ViewModels
         {
             get
             {
-                if (Model?.ProjectId == null) return new ProjectViewModel { Model = null };
-                var project = _toDoSvc.GetProjectById(Model.ProjectId);
-                return new ProjectViewModel { Model = project };
+                if (Model?.ProjectId == null)
+                {
+                    // Return the "No Project" option
+                    return AvailableProjects.FirstOrDefault(p => p.Model == null);
+                }
+
+                // Return the matching project from available projects
+                return AvailableProjects.FirstOrDefault(p => p.Model?.Id == Model.ProjectId);
             }
             set
             {

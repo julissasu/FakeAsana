@@ -12,47 +12,94 @@
                FontAttributes="Bold"
                HorizontalOptions="Center"/>
 
+        <!-- Add Project Form (Collapsible) -->
+        <Frame IsVisible="{Binding ShowAddForm}"
+               BackgroundColor="#f0f0f0"
+               BorderColor="#34C759"
+               CornerRadius="10"
+               Padding="15">
+            <VerticalStackLayout Spacing="10">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0"
+                           Text="Add New Project"
+                           FontSize="18"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+                    <Button Grid.Column="1"
+                            Text="✕"
+                            Clicked="CloseFormClicked"
+                            BackgroundColor="Transparent"
+                            TextColor="#34C759"
+                            FontSize="16"
+                            WidthRequest="30"
+                            HeightRequest="30"/>
+                </Grid>
+
+                <Entry x:Name="ProjectNameEntry"
+                       Placeholder="Project Name"
+                       FontSize="16"/>
+
+                <Entry x:Name="ProjectDescriptionEntry"
+                       Placeholder="Project Description (Optional)"
+                       FontSize="16"/>
+
+                <Button Text="Create Project"
+                        Clicked="CreateProjectClicked"
+                        BackgroundColor="#34C759"
+                        TextColor="White"
+                        HeightRequest="45"
+                        CornerRadius="8"
+                        Margin="0,10,0,0"/>
+            </VerticalStackLayout>
+        </Frame>
+
         <ListView ItemsSource="{Binding Projects}"
                   SelectedItem="{Binding SelectedProject}"
-                  HeightRequest="300">
+                  RowHeight="120"
+                  VerticalOptions="FillAndExpand">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <Grid Padding="10">
+                        <Grid Padding="15,10"
+                              RowSpacing="5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition/>
-                                <RowDefinition/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <Label Grid.Column="0"
                                    Grid.Row="0"
                                    Text="{Binding Model.Id}"
-                                   FontAttributes="Bold"/>
+                                   FontAttributes="Bold"
+                                   FontSize="16"
+                                   VerticalOptions="Center"
+                                   Margin="0,0,15,0"/>
 
                             <Label Grid.Column="1"
                                    Grid.Row="0"
                                    Text="{Binding Model.Name}"
                                    FontAttributes="Bold"
+                                   FontSize="16"
                                    TextColor="Green"/>
 
                             <Label Grid.Column="1"
                                    Grid.Row="1"
                                    Text="{Binding Model.Description}"
-                                   FontSize="12"
-                                   TextColor="Gray"/>
+                                   FontSize="14"
+                                   TextColor="Gray"
+                                   Margin="0,5,0,0"/>
 
-                            <Button Grid.Column="2"
-                                    Grid.RowSpan="2"
-                                    Text="Delete"
-                                    Clicked="DeleteProjectClicked"
-                                    BackgroundColor="Red"
-                                    TextColor="White"
-                                    FontSize="12"/>
+                            <Label Grid.Column="1"
+                                   Grid.Row="2"
+                                   Text="{Binding TaskSummary}"
+                                   FontSize="12"
+                                   TextColor="Blue"
+                                   Margin="0,5,0,0"/>
                         </Grid>
                     </ViewCell>
                 </DataTemplate>
@@ -60,6 +107,8 @@
         </ListView>
 
         <VerticalStackLayout Spacing="10">
+            <Button Text="Add New Project"
+                    Clicked="AddNewProjectClicked"/>
             <Button Text="Delete Selected Project"
                     Clicked="DeleteProjectClicked"/>
             <Button Text="Back to Tasks"

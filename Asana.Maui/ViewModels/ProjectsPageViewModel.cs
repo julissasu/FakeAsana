@@ -9,10 +9,27 @@ namespace Asana.Maui.ViewModels
     public class ProjectsPageViewModel : INotifyPropertyChanged
     {
         private ToDoServiceProxy _toDoSvc;
+        private bool _showAddForm = false;
 
         public ProjectsPageViewModel()
         {
             _toDoSvc = ToDoServiceProxy.Current;
+
+            // Listen for task completion changes to update project summaries
+            ToDoDetailViewModel.TaskCompletionChanged += RefreshPage;
+        }
+
+        public bool ShowAddForm
+        {
+            get => _showAddForm;
+            set
+            {
+                if (_showAddForm != value)
+                {
+                    _showAddForm = value;
+                    NotifyPropertyChanged();
+                }
+            }
         }
 
         public ObservableCollection<ProjectViewModel> Projects
@@ -27,6 +44,12 @@ namespace Asana.Maui.ViewModels
         public ProjectViewModel? SelectedProject { get; set; }
 
         public int SelectedProjectId => SelectedProject?.Model?.Id ?? 0;
+
+        public void AddProject(Project project)
+        {
+            _toDoSvc.AddOrUpdateProject(project);
+            NotifyPropertyChanged(nameof(Projects));
+        }
 
         public void DeleteProject()
         {

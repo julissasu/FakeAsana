@@ -95,7 +95,7 @@ namespace Asana
                             break;
 
                         case 2:
-                            toDoSvc.DisplayToDos();
+                            DisplayToDos(toDoSvc);
                             Console.Write("ToDo ID to Delete: ");
                             var deleteChoice = int.Parse(Console.ReadLine() ?? "0");
                             var toDoToDelete = toDoSvc.GetToDoById(deleteChoice);
@@ -103,7 +103,7 @@ namespace Asana
                             break;
 
                         case 3:
-                            toDoSvc.DisplayToDos();
+                            DisplayToDos(toDoSvc);
                             Console.Write("ToDo ID to Update: ");
                             var updateChoice = int.Parse(Console.ReadLine() ?? "0");
                             var toDoToUpdate = toDoSvc.GetToDoById(updateChoice);
@@ -123,7 +123,7 @@ namespace Asana
                                 }
                                 else if (updateType == "2")
                                 {
-                                    toDoSvc.DisplayProjects();
+                                    DisplayProjects(toDoSvc);
                                     Console.Write("Enter Project ID to assign (or 0 to unassign): ");
                                     if (int.TryParse(Console.ReadLine(), out int newProjectId))
                                     {
@@ -134,7 +134,7 @@ namespace Asana
                             break;
 
                         case 4:
-                            toDoSvc.DisplayToDos();
+                            DisplayToDos(toDoSvc);
                             break;
 
                         case 5:
@@ -167,7 +167,7 @@ namespace Asana
                             break;
 
                         case 6:
-                            toDoSvc.DisplayProjects();
+                            DisplayProjects(toDoSvc);
                             Console.Write("Project ID to Delete: ");
                             var deleteProjChoice = int.Parse(Console.ReadLine() ?? "0");
                             var projectToDelete = toDoSvc.GetProjectById(deleteProjChoice);
@@ -175,7 +175,7 @@ namespace Asana
                             break;
 
                         case 7:
-                            toDoSvc.DisplayProjects();
+                            DisplayProjects(toDoSvc);
                             Console.Write("Project ID to Update: ");
                             var updateProjChoice = int.Parse(Console.ReadLine() ?? "0");
                             var projectToUpdate = toDoSvc.GetProjectById(updateProjChoice);
@@ -191,14 +191,14 @@ namespace Asana
                             break;
 
                         case 8:
-                            toDoSvc.DisplayProjects();
+                            DisplayProjects(toDoSvc);
                             break;
 
                         case 9:
-                            toDoSvc.DisplayProjects();
+                            DisplayProjects(toDoSvc);
                             Console.Write("Enter Project ID to view its ToDos: ");
                             var viewProjChoice = int.Parse(Console.ReadLine() ?? "0");
-                            toDoSvc.DisplayToDosByProject(viewProjChoice);
+                            DisplayToDosByProject(toDoSvc, viewProjChoice);
                             break;
 
                         default:
@@ -212,6 +212,56 @@ namespace Asana
                     Console.WriteLine("ERROR: Invalid menu selection.");
                 }
             } while (choiceInt != 0);
+        }
+
+        // Helper methods for display (moved from service to CLI)
+        private static void DisplayToDos(ToDoServiceProxy service, bool isShowCompleted = false)
+        {
+            var todos = service.ToDos;
+            if (!isShowCompleted)
+            {
+                todos = todos.Where(t => !t.IsComplete).ToList();
+            }
+
+            if (todos.Count == 0)
+            {
+                Console.WriteLine("No tasks found.");
+                return;
+            }
+
+            todos.ForEach(Console.WriteLine);
+        }
+
+        private static void DisplayProjects(ToDoServiceProxy service)
+        {
+            if (service.Projects.Count == 0)
+            {
+                Console.WriteLine("No projects found.");
+                return;
+            }
+
+            Console.WriteLine("Projects:");
+            service.Projects.ForEach(p => Console.WriteLine($"[{p.Id}] {p.Name} - {p.Description}"));
+        }
+
+        private static void DisplayToDosByProject(ToDoServiceProxy service, int projectId)
+        {
+            var project = service.GetProjectById(projectId);
+            if (project == null)
+            {
+                Console.WriteLine("Project not found.");
+                return;
+            }
+
+            var projectToDos = service.GetToDosByProject(projectId);
+            if (projectToDos.Count == 0)
+            {
+                Console.WriteLine($"No tasks found in project '{project.Name}'.");
+                return;
+            }
+
+            Console.WriteLine($"Tasks in project '{project.Name}':");
+            projectToDos.ForEach(Console.WriteLine);
         }
     }
 }

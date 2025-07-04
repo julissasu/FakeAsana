@@ -71,7 +71,7 @@
                                                                       <RowDefinition Height="Auto"/>
                                                                </Grid.RowDefinitions>
 
-                                                               <CheckBox IsChecked="{Binding Model.IsComplete}"
+                                                               <CheckBox IsChecked="{Binding IsComplete}"
                                                                          Grid.Column="0"
                                                                          Grid.RowSpan="3"
                                                                          VerticalOptions="Center"
