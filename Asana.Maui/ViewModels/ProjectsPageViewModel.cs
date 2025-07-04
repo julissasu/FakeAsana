@@ -15,10 +15,11 @@ namespace Asana.Maui.ViewModels
         {
             _toDoSvc = ToDoServiceProxy.Current;
 
-            // Listen for task completion changes to update project summaries
+            // Listen for ToDo completion changes to update project summaries
             ToDoDetailViewModel.TaskCompletionChanged += RefreshPage;
         }
 
+        // Controls whether the add project form is shown
         public bool ShowAddForm
         {
             get => _showAddForm;
@@ -32,6 +33,7 @@ namespace Asana.Maui.ViewModels
             }
         }
 
+        // List of all projects displayed on the page
         public ObservableCollection<ProjectViewModel> Projects
         {
             get
@@ -41,24 +43,29 @@ namespace Asana.Maui.ViewModels
             }
         }
 
+        // Currently selected project
         public ProjectViewModel? SelectedProject { get; set; }
 
+        // ID of the currently selected project (or 0 if none selected)
         public int SelectedProjectId => SelectedProject?.Model?.Id ?? 0;
 
+        // Add a new project to the list or update an existing one
         public void AddProject(Project project)
         {
             _toDoSvc.AddOrUpdateProject(project);
             NotifyPropertyChanged(nameof(Projects));
         }
 
+        // Delete the currently selected project
         public void DeleteProject()
         {
             if (SelectedProject == null) return;
 
             _toDoSvc.DeleteProject(SelectedProject.Model);
-            NotifyPropertyChanged(nameof(Projects));
+            NotifyPropertyChanged(nameof(Projects));    // Refresh the project list
         }
 
+        // Refresh the project list
         public void RefreshPage()
         {
             NotifyPropertyChanged(nameof(Projects));
@@ -66,6 +73,7 @@ namespace Asana.Maui.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // Notify property change for data binding
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

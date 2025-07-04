@@ -10,6 +10,7 @@ namespace Asana.Maui.ViewModels
     {
         private ToDoServiceProxy _toDoSvc;
 
+        // Default constructor initializes a new ToDo
         public ToDoDetailViewModel()
         {
             _toDoSvc = ToDoServiceProxy.Current;
@@ -17,6 +18,7 @@ namespace Asana.Maui.ViewModels
             DeleteCommand = new Command(DoDelete);
         }
 
+        // Constructor for loading an existing ToDo by ID
         public ToDoDetailViewModel(int id)
         {
             _toDoSvc = ToDoServiceProxy.Current;
@@ -24,6 +26,7 @@ namespace Asana.Maui.ViewModels
             DeleteCommand = new Command(DoDelete);
         }
 
+        // Constructor for loading an existing ToDo model directly
         public ToDoDetailViewModel(ToDo? model)
         {
             _toDoSvc = ToDoServiceProxy.Current;
@@ -31,13 +34,14 @@ namespace Asana.Maui.ViewModels
             DeleteCommand = new Command(DoDelete);
         }
 
+        // Command to delete the current ToDo
         public void DoDelete()
         {
             ToDoServiceProxy.Current.DeleteToDo(Model);
         }
 
-        public ToDo? Model { get; set; }
-        public ICommand DeleteCommand { get; set; }
+        public ToDo? Model { get; set; }    // The underlying ToDo model
+        public ICommand DeleteCommand { get; set; } // Delete command for the ToDo
 
         // Wrapper property for ID to handle updates
         public string ModelId
@@ -69,10 +73,10 @@ namespace Asana.Maui.ViewModels
             }
         }
 
-        // Static event for notifying other ViewModels
+        // Static event for notifying other ViewModels when a task's completion status changes
         public static event Action? TaskCompletionChanged;
 
-        // Project display logic
+        // Project display
         public string ProjectDisplayName
         {
             get
@@ -83,9 +87,10 @@ namespace Asana.Maui.ViewModels
             }
         }
 
+        // Check if the ToDo has an associated project
         public bool HasProject => Model?.ProjectId != null;
 
-        // Priority management
+        // Priority management (dropdown options)
         public List<int> Priorities
         {
             get
@@ -94,6 +99,7 @@ namespace Asana.Maui.ViewModels
             }
         }
 
+        // Currently selected priority
         public int SelectedPriority
         {
             get
@@ -129,6 +135,7 @@ namespace Asana.Maui.ViewModels
             }
         }
 
+        // Currently selected project
         public ProjectViewModel? SelectedProject
         {
             get
@@ -139,7 +146,7 @@ namespace Asana.Maui.ViewModels
                     return AvailableProjects.FirstOrDefault(p => p.Model == null);
                 }
 
-                // Return the matching project from available projects
+                // Match selected project by ID
                 return AvailableProjects.FirstOrDefault(p => p.Model?.Id == Model.ProjectId);
             }
             set
@@ -154,15 +161,16 @@ namespace Asana.Maui.ViewModels
             }
         }
 
+        // Save or update the ToDo
         public void AddOrUpdateToDo()
         {
             _toDoSvc.AddOrUpdateToDo(Model);
 
-            // Notify that the ID might have changed (for new todos)
+            // Notify that the ID might have changed
             NotifyPropertyChanged(nameof(ModelId));
         }
 
-        // Priority display for Entry binding (if needed)
+        // Priority display for Entry binding
         public string PriorityDisplay
         {
             get
@@ -187,6 +195,7 @@ namespace Asana.Maui.ViewModels
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // Notify property change for data binding
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

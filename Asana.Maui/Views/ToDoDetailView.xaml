@@ -9,7 +9,7 @@
         <VerticalStackLayout Padding="20"
                              Spacing="15">
 
-            <!-- ID and Name -->
+            <!-- ToDo ID and Name -->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -30,24 +30,28 @@
                        Grid.Column="3"/>
             </Grid>
 
-            <!-- Completion and Priority -->
+            <!-- Completion checkbox and Priority picker -->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="2*"/>
                 </Grid.ColumnDefinitions>
+
+                <!-- Checkbox toggles IsComplete -->
                 <CheckBox IsChecked="{Binding IsComplete}"
                           Grid.Column="0"/>
                 <Label Text="Priority:"
                        Grid.Column="1"
                        VerticalOptions="Center"/>
+
+                <!-- Priority Picker -->
                 <Picker ItemsSource="{Binding Priorities}"
                         SelectedItem="{Binding SelectedPriority}"
                         Grid.Column="2"/>
             </Grid>
 
-            <!-- Description -->
+            <!-- ToDo Description -->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
@@ -60,15 +64,18 @@
                        Grid.Column="1"/>
             </Grid>
 
-            <!-- Due Date -->
+            <!-- Due date selection -->
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
+
                 <Label Text="Due Date:"
                        Grid.Column="0"
                        VerticalOptions="Center"/>
+
+                <!-- DatePicker for selecting due date -->
                 <DatePicker Date="{Binding Model.DueDate}"
                             Grid.Column="1"
                             Format="MMM dd, yyyy"/>
@@ -80,22 +87,29 @@
                     <ColumnDefinition/>
                     <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
+
                 <Label Text="Project:"
                        Grid.Column="0"
                        VerticalOptions="Center"/>
+
+                <!-- Picker for selecting project -->
                 <Picker ItemsSource="{Binding AvailableProjects}"
                         SelectedItem="{Binding SelectedProject}"
                         ItemDisplayBinding="{Binding DisplayName}"
                         Grid.Column="1"/>
             </Grid>
 
-            <!-- Action Buttons -->
+            <!-- Save and Cancel action Buttons -->
             <VerticalStackLayout Spacing="10"
                                  Margin="0,20,0,0">
+
+                <!-- Save triggers add/update logic -->
                 <Button Text="Save"
                         Clicked="OkClicked"
                         BackgroundColor="Green"
                         TextColor="White"/>
+
+                <!-- Cancel returns to previous page without saving -->
                 <Button Text="Cancel"
                         Clicked="CancelClicked"
                         BackgroundColor="Gray"

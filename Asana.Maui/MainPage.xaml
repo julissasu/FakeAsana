@@ -12,19 +12,27 @@
                      <Grid>
                             <Grid.RowDefinitions>
                                    <RowDefinition Height="Auto"/>
+                                   <!-- Tool Bar -->
                                    <RowDefinition Height="*"/>
+                                   <!-- ToDo List -->
                                    <RowDefinition Height="Auto"/>
+                                   <!-- Button Bar -->
                             </Grid.RowDefinitions>
 
-                            <!-- Tool Bar-->
+                            <!-- Tool Bar: Filter and Search -->
                             <Grid Grid.Row="0"
                                   RowSpacing="10"
                                   Padding="0,0,0,10">
                                    <Grid.ColumnDefinitions>
                                           <ColumnDefinition Width="2*"/>
+                                          <!-- Label -->
                                           <ColumnDefinition Width="Auto"/>
+                                          <!-- CheckBox -->
                                           <ColumnDefinition Width="5*"/>
+                                          <!-- Search Bar -->
                                    </Grid.ColumnDefinitions>
+
+                                   <!-- Toggle for showing completed ToDos-->
                                    <Label Grid.Column="0"
                                           Text="Show Completed Tasks:"
                                           VerticalOptions="Center"
@@ -33,15 +41,21 @@
                                              IsChecked="{Binding IsShowCompleted}"
                                              VerticalOptions="Center"
                                              Margin="10,0"/>
+
+                                   <!-- Search Bar and button -->
                                    <Grid Grid.Column="2">
                                           <Grid.ColumnDefinitions>
                                                  <ColumnDefinition Width="*"/>
                                                  <ColumnDefinition Width="Auto"/>
                                           </Grid.ColumnDefinitions>
+
+                                          <!-- Query input -->
                                           <Entry Grid.Column="0"
                                                  Text="{Binding Query}"
                                                  Placeholder="Search tasks..."
                                                  FontSize="14"/>
+
+                                          <!-- Search button -->
                                           <Button Grid.Column="1"
                                                   Text="Search"
                                                   Clicked="SearchClicked"
@@ -71,12 +85,14 @@
                                                                       <RowDefinition Height="Auto"/>
                                                                </Grid.RowDefinitions>
 
+                                                               <!-- CheckBox for completion status -->
                                                                <CheckBox IsChecked="{Binding IsComplete}"
                                                                          Grid.Column="0"
                                                                          Grid.RowSpan="3"
                                                                          VerticalOptions="Center"
                                                                          Margin="0,0,15,0"/>
 
+                                                               <!-- ToDo name -->
                                                                <Label Grid.Column="1"
                                                                       Grid.Row="0"
                                                                       Text="{Binding Model.Name}"
@@ -84,6 +100,7 @@
                                                                       FontSize="16"
                                                                       TextColor="Red"/>
 
+                                                               <!-- ToDo description -->
                                                                <Label Grid.Column="1"
                                                                       Grid.Row="1"
                                                                       Text="{Binding Model.Description}"
@@ -91,6 +108,7 @@
                                                                       TextColor="Gray"
                                                                       Margin="0,5,0,5"/>
 
+                                                               <!-- Priority, Due Date, and Project -->
                                                                <StackLayout Grid.Column="1"
                                                                             Grid.Row="2"
                                                                             Orientation="Horizontal"
