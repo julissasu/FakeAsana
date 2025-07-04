@@ -13,7 +13,7 @@ namespace Asana.Library.Models
         public string? Description { get; set; }
         public int CompletePercent { get; set; }
         public double CompleteProgress => CompletePercent / 100.0;
-        
+
         public List<ToDo> ToDos { get; set; } = new List<ToDo>();
     }
 }

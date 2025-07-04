@@ -9,9 +9,10 @@ namespace Asana.Library.Services
 {
     public class ToDoServiceProxy
     {
-        private List<ToDo> _toDoList;
-        private List<Project> _projectList;
+        private List<ToDo> _toDoList; // List of ToDos
+        private List<Project> _projectList; // List of Projects
 
+        // Copy of ToDos and Projects
         public List<ToDo> ToDos
         {
             get
@@ -42,15 +43,17 @@ namespace Asana.Library.Services
             }
         }
 
+        // Singleton instance
         private ToDoServiceProxy()
         {
-            // Start with empty lists (no web service)
+            // Start with empty lists
             _toDoList = new List<ToDo>();
             _projectList = new List<Project>();
         }
 
         private static ToDoServiceProxy? instance;
 
+        // Singleton access point
         public static ToDoServiceProxy Current
         {
             get
@@ -64,6 +67,7 @@ namespace Asana.Library.Services
         }
 
         // ToDo methods
+        // Returns the next available ToDo ID
         private int nextToDoId
         {
             get
@@ -72,17 +76,20 @@ namespace Asana.Library.Services
             }
         }
 
+        // Adds or updates a ToDo item
         public ToDo? AddOrUpdate(ToDo? toDo)
         {
-            if (toDo == null) return toDo;
+            if (toDo == null) return toDo;  // Return null if toDo is null
 
-            var isNew = toDo.Id == 0;
+            var isNew = toDo.Id == 0;       // Check if it's a new ToDo
 
+            // If it's a new ToDo, assign the next available ID
             if (isNew)
             {
                 toDo.Id = nextToDoId;
                 _toDoList.Add(toDo);
             }
+            // If it's an existing ToDo, find it in the list and update it
             else
             {
                 var existingToDo = _toDoList.FirstOrDefault(t => t.Id == toDo.Id);
@@ -102,6 +109,7 @@ namespace Asana.Library.Services
             return AddOrUpdate(toDo);
         }
 
+        // Retrieves a ToDo by its ID
         public ToDo? GetById(int id)
         {
             return _toDoList.FirstOrDefault(t => t.Id == id);
@@ -112,6 +120,7 @@ namespace Asana.Library.Services
             return GetById(id);
         }
 
+        // Retrieves all ToDos 
         public void DeleteToDo(int id)
         {
             var toDoToDelete = _toDoList.FirstOrDefault(t => t.Id == id);
@@ -121,6 +130,7 @@ namespace Asana.Library.Services
             }
         }
 
+        // Deletes a ToDo by its ID
         public void DeleteToDo(ToDo? toDo)
         {
             if (toDo != null)
@@ -130,6 +140,7 @@ namespace Asana.Library.Services
         }
 
         // Project methods
+        // Returns the next available Project ID
         private int nextProjectId
         {
             get
@@ -138,17 +149,20 @@ namespace Asana.Library.Services
             }
         }
 
+        // Adds or updates a Project
         public Project? AddOrUpdateProject(Project? project)
         {
-            if (project == null) return project;
+            if (project == null) return project; // Return null if project is null
 
-            var isNew = project.Id == 0;
+            var isNew = project.Id == 0;    // Check if it's a new Project
 
+            // If it's a new Project, assign the next available ID
             if (isNew)
             {
                 project.Id = nextProjectId;
                 _projectList.Add(project);
             }
+            // If it's an existing Project, find it in the list and update it
             else
             {
                 var existingProject = _projectList.FirstOrDefault(p => p.Id == project.Id);
@@ -163,12 +177,14 @@ namespace Asana.Library.Services
             return project;
         }
 
+        // Retrieves a Project by its ID
         public Project? GetProjectById(int? id)
         {
             if (!id.HasValue) return null;
             return _projectList.FirstOrDefault(p => p.Id == id);
         }
 
+        // Deletes a Project by its ID and unassigns all ToDos from it
         public void DeleteProject(Project? project)
         {
             if (project == null) return;
@@ -180,9 +196,10 @@ namespace Asana.Library.Services
                 todo.ProjectId = null;
             }
 
-            _projectList.Remove(project);
+            _projectList.Remove(project);   // Remove the project from the list
         }
 
+        // Retrieves all ToDos associated with a specific Project
         public List<ToDo> GetToDosByProject(int projectId)
         {
             return _toDoList.Where(t => t.ProjectId == projectId).ToList();
