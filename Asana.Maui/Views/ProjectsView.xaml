@@ -13,45 +13,77 @@
                HorizontalOptions="Center"/>
 
         <!-- Add Project Form (Collapsible) -->
-        <Frame IsVisible="{Binding ShowAddForm}"
-               BackgroundColor="#f0f0f0"
-               BorderColor="#34C759"
-               CornerRadius="10"
-               Padding="15">
-            <VerticalStackLayout Spacing="10">
-                <Grid ColumnDefinitions="*,Auto">
-                    <Label Grid.Column="0"
-                           Text="Add New Project"
-                           FontSize="18"
-                           FontAttributes="Bold"
-                           VerticalOptions="Center"/>
-                    <Button Grid.Column="1"
-                            Text="✕"
-                            Clicked="CloseFormClicked"
-                            BackgroundColor="Transparent"
-                            TextColor="#34C759"
-                            FontSize="16"
-                            WidthRequest="30"
-                            HeightRequest="30"/>
-                </Grid>
+        <VerticalStackLayout IsVisible="{Binding ShowAddForm}"
+                             Spacing="15"
+                             Padding="20"
+                             Margin="0,0,0,15">
 
+            <Grid ColumnDefinitions="*,Auto"
+                  Margin="0,0,0,10">
+                <Label Grid.Column="0"
+                       Text="Add New Project"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"/>
+                <Button Grid.Column="1"
+                        Text="✕"
+                        Clicked="CloseFormClicked"
+                        BackgroundColor="Transparent"
+                        TextColor="Red"
+                        FontSize="16"
+                        WidthRequest="30"
+                        HeightRequest="30"/>
+            </Grid>
+
+            <Grid RowSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Label Text="Name:"
+                       Grid.Column="0"
+                       Grid.Row="0"
+                       VerticalOptions="Center"
+                       FontSize="16"/>
                 <Entry x:Name="ProjectNameEntry"
+                       Grid.Column="1"
+                       Grid.Row="0"
                        Placeholder="Project Name"
                        FontSize="16"/>
 
+                <Label Text="Description:"
+                       Grid.Column="0"
+                       Grid.Row="1"
+                       VerticalOptions="Center"
+                       FontSize="16"/>
                 <Entry x:Name="ProjectDescriptionEntry"
+                       Grid.Column="1"
+                       Grid.Row="1"
                        Placeholder="Project Description (Optional)"
                        FontSize="16"/>
+            </Grid>
 
+            <VerticalStackLayout Spacing="10"
+                                 Margin="0,10,0,0">
                 <Button Text="Create Project"
                         Clicked="CreateProjectClicked"
-                        BackgroundColor="#34C759"
+                        BackgroundColor="Green"
                         TextColor="White"
                         HeightRequest="45"
-                        CornerRadius="8"
-                        Margin="0,10,0,0"/>
+                        CornerRadius="8"/>
+                <Button Text="Cancel"
+                        Clicked="CloseFormClicked"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        HeightRequest="45"
+                        CornerRadius="8"/>
             </VerticalStackLayout>
-        </Frame>
+        </VerticalStackLayout>
 
         <ListView ItemsSource="{Binding Projects}"
                   SelectedItem="{Binding SelectedProject}"
@@ -98,7 +130,7 @@
                                    Grid.Row="2"
                                    Text="{Binding TaskSummary}"
                                    FontSize="12"
-                                   TextColor="Blue"
+                                   TextColor="blue"
                                    Margin="0,5,0,0"/>
                         </Grid>
                     </ViewCell>
