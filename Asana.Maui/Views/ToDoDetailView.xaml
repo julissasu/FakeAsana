@@ -20,7 +20,7 @@
                 <Label Text="Id:"
                        Grid.Column="0"
                        VerticalOptions="Center"/>
-                <Entry Text="{Binding Model.Id}"
+                <Entry Text="{Binding ModelId}"
                        Grid.Column="1"
                        IsReadOnly="True"/>
                 <Label Text="Name:"

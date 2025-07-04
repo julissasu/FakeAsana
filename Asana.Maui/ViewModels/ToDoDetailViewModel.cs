@@ -39,6 +39,15 @@ namespace Asana.Maui.ViewModels
         public ToDo? Model { get; set; }
         public ICommand DeleteCommand { get; set; }
 
+        // Wrapper property for ID to handle updates
+        public string ModelId
+        {
+            get
+            {
+                return Model?.Id.ToString() ?? "0";
+            }
+        }
+
         // Wrapper for IsComplete to trigger immediate updates
         public bool IsComplete
         {
@@ -148,6 +157,9 @@ namespace Asana.Maui.ViewModels
         public void AddOrUpdateToDo()
         {
             _toDoSvc.AddOrUpdateToDo(Model);
+
+            // Notify that the ID might have changed (for new todos)
+            NotifyPropertyChanged(nameof(ModelId));
         }
 
         // Priority display for Entry binding (if needed)
