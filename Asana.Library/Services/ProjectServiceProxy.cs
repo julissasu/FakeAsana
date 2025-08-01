@@ -10,31 +10,7 @@ namespace Asana.Library.Services
 
         private ProjectServiceProxy()
         {
-            // Initialize with some sample projects
-            _projectList = new List<Project>
-            {
-                new Project
-                {
-                    Id = 1,
-                    Name = "Website Redesign",
-                    Description = "Complete redesign of company website with modern UI/UX",
-                    CompletePercent = 75
-                },
-                new Project
-                {
-                    Id = 2,
-                    Name = "Mobile App Development",
-                    Description = "Develop cross-platform mobile application",
-                    CompletePercent = 30
-                },
-                new Project
-                {
-                    Id = 3,
-                    Name = "Database Migration",
-                    Description = "Migrate legacy database to new cloud infrastructure",
-                    CompletePercent = 100
-                }
-            };
+            _projectList = new List<Project>();
         }
 
         private static ProjectServiceProxy? _instance;
@@ -85,6 +61,11 @@ namespace Asana.Library.Services
                     var index = _projectList.IndexOf(existingProject);
                     _projectList.RemoveAt(index);
                     _projectList.Insert(index, project);
+                }
+                else
+                {
+                    // Project has an ID but doesn't exist in list (e.g., loaded from persistence)
+                    _projectList.Add(project);
                 }
             }
 

@@ -27,7 +27,6 @@ namespace Asana
                 Console.WriteLine("7. Update a Project");
                 Console.WriteLine("8. List all Projects");
                 Console.WriteLine("9. List all ToDos in a Given Project");
-                Console.WriteLine("10. Test Filebase Database");
                 Console.WriteLine("0. Exit");
 
                 var choice = Console.ReadLine() ?? "0"; // Default to "0" if input is null
@@ -334,11 +333,6 @@ namespace Asana
                             Console.Write("Enter Project ID to view its ToDos: ");
                             var viewProjChoice = int.Parse(Console.ReadLine() ?? "0");  // search for Project by ID
                             DisplayToDosByProject(toDoSvc, viewProjChoice);
-                            break;
-
-                        case 10:
-                            Console.WriteLine("\nDatabase System: Using Filebase for persistent storage.");
-                            Console.WriteLine("All TODO and Project data is automatically saved to JSON files.");
                             break;
 
                         default:

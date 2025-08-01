@@ -26,15 +26,19 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Initialize persistence service to load data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var persistenceService = scope.ServiceProvider.GetRequiredService<FilebasePersistenceService>();
+    // Service constructor will automatically load data
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-// Remove HTTPS redirection for development
-// app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 

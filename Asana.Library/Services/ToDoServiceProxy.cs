@@ -31,15 +31,7 @@ namespace Asana.Library.Services
         private ToDoServiceProxy()
         {
             _projectSvc = ProjectServiceProxy.Current;
-
-            // Initialize with some sample data
-            _toDoList = new List<ToDo>
-            {
-                new ToDo { Id = 1, Name = "Setup development environment", Description = "Install VS Code, .NET SDK", Priority = 1, IsComplete = true, ProjectId = 1, DueDate = DateTime.Now.AddDays(-5) },
-                new ToDo { Id = 2, Name = "Create API endpoints", Description = "Build REST API for todo management", Priority = 2, IsComplete = false, ProjectId = 1, DueDate = DateTime.Now.AddDays(3) },
-                new ToDo { Id = 3, Name = "Implement database layer", Description = "Set up Filebase for data persistence", Priority = 1, IsComplete = false, ProjectId = 1, DueDate = DateTime.Now.AddDays(7) },
-                new ToDo { Id = 4, Name = "Design mobile UI", Description = "Create wireframes and mockups", Priority = 3, IsComplete = false, ProjectId = 2, DueDate = DateTime.Now.AddDays(10) }
-            };
+            _toDoList = new List<ToDo>();
         }
 
         private static ToDoServiceProxy? instance;

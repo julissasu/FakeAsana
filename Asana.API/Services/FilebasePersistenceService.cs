@@ -56,6 +56,7 @@ namespace Asana.API.Services
             try
             {
                 var loadedProjects = _filebase.Load<List<Project>>(PROJECT_TABLE);
+                
                 if (loadedProjects != null && loadedProjects.Any())
                 {
                     var projectService = ProjectServiceProxy.Current;
