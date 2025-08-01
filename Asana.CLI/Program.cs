@@ -1,5 +1,6 @@
 ﻿using Asana.Library.Models;
 using Asana.Library.Services;
+using Asana.Library.Tests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,11 @@ namespace Asana
     {
         public static void Main(string[] args)
         {
+            // Run Filebase test first to demonstrate the new database system
+            Console.WriteLine("🔧 Testing Filebase Database System...");
+            FilebaseTest.TestFilebaseOperations();
+            Console.WriteLine("\n" + new string('=', 50));
+
             var toDoSvc = ToDoServiceProxy.Current; // Singleton instance of todo service proxy
             var projectSvc = ProjectServiceProxy.Current; // Singleton instance of project service proxy
             int choiceInt; // User menu choice
@@ -27,6 +33,7 @@ namespace Asana
                 Console.WriteLine("7. Update a Project");
                 Console.WriteLine("8. List all Projects");
                 Console.WriteLine("9. List all ToDos in a Given Project");
+                Console.WriteLine("10. Test Filebase Database");
                 Console.WriteLine("0. Exit");
 
                 var choice = Console.ReadLine() ?? "0"; // Default to "0" if input is null
@@ -333,6 +340,12 @@ namespace Asana
                             Console.Write("Enter Project ID to view its ToDos: ");
                             var viewProjChoice = int.Parse(Console.ReadLine() ?? "0");  // search for Project by ID
                             DisplayToDosByProject(toDoSvc, viewProjChoice);
+                            break;
+
+                        case 10:
+                            // Test Filebase Database System
+                            Console.WriteLine("\nRunning Filebase Database Test...");
+                            FilebaseTest.TestFilebaseOperations();
                             break;
 
                         default:

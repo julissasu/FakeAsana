@@ -1,5 +1,6 @@
 using Asana.API.DTOs;
 using Asana.API.Mappers;
+using Asana.API.Services;
 using Asana.Library.Models;
 using Asana.Library.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ namespace Asana.API.Controllers
     public class ToDosController : ControllerBase
     {
         private readonly ToDoServiceProxy _todoService;
+        private readonly FilebasePersistenceService _persistenceService;
 
-        public ToDosController()
+        public ToDosController(FilebasePersistenceService persistenceService)
         {
             _todoService = ToDoServiceProxy.Current;
+            _persistenceService = persistenceService;
         }
 
         [HttpGet]
@@ -57,6 +60,9 @@ namespace Asana.API.Controllers
             {
                 return BadRequest("Failed to create todo.");
             }
+            
+            // Save to Filebase
+            _persistenceService.SaveToDos();
 
             var todoDto = ToDoMapper.ToDto(createdToDo);
             return CreatedAtAction(nameof(GetToDo), new { id = todoDto.Id }, todoDto);
@@ -88,6 +94,9 @@ namespace Asana.API.Controllers
             {
                 return BadRequest("Failed to update todo.");
             }
+            
+            // Save to Filebase
+            _persistenceService.SaveToDos();
 
             return Ok(ToDoMapper.ToDto(updatedToDo));
         }
@@ -102,6 +111,10 @@ namespace Asana.API.Controllers
             }
 
             _todoService.DeleteToDo(id);
+            
+            // Save to Filebase
+            _persistenceService.SaveToDos();
+            
             return NoContent();
         }
 
@@ -121,6 +134,9 @@ namespace Asana.API.Controllers
             {
                 return BadRequest("Failed to update todo.");
             }
+            
+            // Save to Filebase
+            _persistenceService.SaveToDos();
 
             return Ok(ToDoMapper.ToDto(updatedToDo));
         }
