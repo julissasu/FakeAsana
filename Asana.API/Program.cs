@@ -26,7 +26,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Remove HTTPS redirection for development
+// app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 

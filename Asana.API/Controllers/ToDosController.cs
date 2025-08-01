@@ -1,3 +1,5 @@
+using Asana.API.DTOs;
+using Asana.API.Mappers;
 using Asana.Library.Models;
 using Asana.Library.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,48 +18,61 @@ namespace Asana.API.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ToDo>> GetToDos()
+        public ActionResult<IEnumerable<ToDoDto>> GetToDos()
         {
-            return Ok(_todoService.ToDos);
+            var todos = _todoService.ToDos.Select(ToDoMapper.ToDto);
+            return Ok(todos);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<ToDo> GetToDo(int id)
+        public ActionResult<ToDoDto> GetToDo(int id)
         {
             var todo = _todoService.GetToDoById(id);
             if (todo == null)
             {
                 return NotFound();
             }
-            return Ok(todo);
+            return Ok(ToDoMapper.ToDto(todo));
         }
 
         [HttpGet("project/{projectId}")]
-        public ActionResult<IEnumerable<ToDo>> GetToDosByProject(int projectId)
+        public ActionResult<IEnumerable<ToDoDto>> GetToDosByProject(int projectId)
         {
-            var todos = _todoService.ToDos.Where(t => t.ProjectId == projectId);
+            var todos = _todoService.ToDos.Where(t => t.ProjectId == projectId).Select(ToDoMapper.ToDto);
             return Ok(todos);
         }
 
         [HttpPost]
-        public ActionResult<ToDo> CreateToDo(ToDo todo)
+        public ActionResult<ToDoDto> CreateToDo(CreateToDoDto dto)
         {
-            if (todo == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
-            todo.Id = 0; // Ensure it's treated as a new todo
+            var todo = ToDoMapper.ToModel(dto);
             var createdToDo = _todoService.AddOrUpdateToDo(todo);
-            return CreatedAtAction(nameof(GetToDo), new { id = createdToDo?.Id }, createdToDo);
+            
+            if (createdToDo == null)
+            {
+                return BadRequest("Failed to create todo.");
+            }
+
+            var todoDto = ToDoMapper.ToDto(createdToDo);
+            return CreatedAtAction(nameof(GetToDo), new { id = todoDto.Id }, todoDto);
         }
 
         [HttpPut("{id}")]
-        public ActionResult<ToDo> UpdateToDo(int id, ToDo todo)
+        public ActionResult<ToDoDto> UpdateToDo(int id, UpdateToDoDto dto)
         {
-            if (todo == null || todo.Id != id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
+            }
+
+            if (dto.Id != id)
+            {
+                return BadRequest("ID mismatch between route and body.");
             }
 
             var existingToDo = _todoService.GetToDoById(id);
@@ -66,8 +81,15 @@ namespace Asana.API.Controllers
                 return NotFound();
             }
 
+            var todo = ToDoMapper.ToModel(dto);
             var updatedToDo = _todoService.AddOrUpdateToDo(todo);
-            return Ok(updatedToDo);
+            
+            if (updatedToDo == null)
+            {
+                return BadRequest("Failed to update todo.");
+            }
+
+            return Ok(ToDoMapper.ToDto(updatedToDo));
         }
 
         [HttpDelete("{id}")]
@@ -84,7 +106,7 @@ namespace Asana.API.Controllers
         }
 
         [HttpPatch("{id}/complete")]
-        public ActionResult<ToDo> ToggleComplete(int id)
+        public ActionResult<ToDoDto> ToggleComplete(int id)
         {
             var todo = _todoService.GetToDoById(id);
             if (todo == null)
@@ -94,7 +116,13 @@ namespace Asana.API.Controllers
 
             todo.IsComplete = !todo.IsComplete;
             var updatedToDo = _todoService.AddOrUpdateToDo(todo);
-            return Ok(updatedToDo);
+            
+            if (updatedToDo == null)
+            {
+                return BadRequest("Failed to update todo.");
+            }
+
+            return Ok(ToDoMapper.ToDto(updatedToDo));
         }
     }
 }

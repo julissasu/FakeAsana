@@ -1,3 +1,5 @@
+using Asana.API.DTOs;
+using Asana.API.Mappers;
 using Asana.Library.Models;
 using Asana.Library.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,41 +18,54 @@ namespace Asana.API.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Project>> GetProjects()
+        public ActionResult<IEnumerable<ProjectDto>> GetProjects()
         {
-            return Ok(_projectService.Projects);
+            var projects = _projectService.Projects.Select(ProjectMapper.ToDto);
+            return Ok(projects);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Project> GetProject(int id)
+        public ActionResult<ProjectDto> GetProject(int id)
         {
             var project = _projectService.GetProjectById(id);
             if (project == null)
             {
                 return NotFound();
             }
-            return Ok(project);
+            return Ok(ProjectMapper.ToDto(project));
         }
 
         [HttpPost]
-        public ActionResult<Project> CreateProject(Project project)
+        public ActionResult<ProjectDto> CreateProject(CreateProjectDto dto)
         {
-            if (project == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
-            project.Id = 0; // Ensure it's treated as a new project
+            var project = ProjectMapper.ToModel(dto);
             var createdProject = _projectService.AddOrUpdateProject(project);
-            return CreatedAtAction(nameof(GetProject), new { id = createdProject?.Id }, createdProject);
+            
+            if (createdProject == null)
+            {
+                return BadRequest("Failed to create project.");
+            }
+
+            var projectDto = ProjectMapper.ToDto(createdProject);
+            return CreatedAtAction(nameof(GetProject), new { id = projectDto.Id }, projectDto);
         }
 
         [HttpPut("{id}")]
-        public ActionResult<Project> UpdateProject(int id, Project project)
+        public ActionResult<ProjectDto> UpdateProject(int id, UpdateProjectDto dto)
         {
-            if (project == null || project.Id != id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
+            }
+
+            if (dto.Id != id)
+            {
+                return BadRequest("ID mismatch between route and body.");
             }
 
             var existingProject = _projectService.GetProjectById(id);
@@ -59,8 +74,15 @@ namespace Asana.API.Controllers
                 return NotFound();
             }
 
+            var project = ProjectMapper.ToModel(dto);
             var updatedProject = _projectService.AddOrUpdateProject(project);
-            return Ok(updatedProject);
+            
+            if (updatedProject == null)
+            {
+                return BadRequest("Failed to update project.");
+            }
+
+            return Ok(ProjectMapper.ToDto(updatedProject));
         }
 
         [HttpDelete("{id}")]
