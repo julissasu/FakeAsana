@@ -9,11 +9,14 @@ namespace Asana.Maui.ViewModels
     public class ToDoDetailViewModel : INotifyPropertyChanged
     {
         private ToDoServiceProxy _toDoSvc;
+        private ProjectServiceProxy _projectSvc;
 
         // Default constructor initializes a new ToDo
         public ToDoDetailViewModel()
         {
             _toDoSvc = ToDoServiceProxy.Current;
+            _projectSvc = ProjectServiceProxy.Current;
+
             Model = new ToDo();
             DeleteCommand = new Command(DoDelete);
         }
@@ -22,6 +25,8 @@ namespace Asana.Maui.ViewModels
         public ToDoDetailViewModel(int id)
         {
             _toDoSvc = ToDoServiceProxy.Current;
+            _projectSvc = ProjectServiceProxy.Current;
+
             Model = _toDoSvc.GetToDoById(id) ?? new ToDo();
             DeleteCommand = new Command(DoDelete);
         }
@@ -30,6 +35,7 @@ namespace Asana.Maui.ViewModels
         public ToDoDetailViewModel(ToDo? model)
         {
             _toDoSvc = ToDoServiceProxy.Current;
+            _projectSvc = ProjectServiceProxy.Current;
             Model = model ?? new ToDo();
             DeleteCommand = new Command(DoDelete);
         }
@@ -37,7 +43,7 @@ namespace Asana.Maui.ViewModels
         // Command to delete the current ToDo
         public void DoDelete()
         {
-            ToDoServiceProxy.Current.DeleteToDo(Model);
+            _toDoSvc.DeleteToDo(Model);
         }
 
         public ToDo? Model { get; set; }    // The underlying ToDo model
@@ -82,7 +88,7 @@ namespace Asana.Maui.ViewModels
             get
             {
                 if (Model?.ProjectId == null) return string.Empty;
-                var project = _toDoSvc.GetProjectById(Model.ProjectId);
+                var project = _projectSvc.GetProjectById(Model.ProjectId);
                 return $"Project: {project?.Name ?? "Unknown"}";
             }
         }
@@ -104,7 +110,7 @@ namespace Asana.Maui.ViewModels
         {
             get
             {
-                return Model == null ? 1 : Model.Priority;
+                return Model?.Priority ?? 1;
             }
             set
             {
@@ -129,7 +135,7 @@ namespace Asana.Maui.ViewModels
                     {
                         new ProjectViewModel { Model = null } // No Project option
                     };
-                    _availableProjects.AddRange(_toDoSvc.Projects.Select(p => new ProjectViewModel { Model = p }));
+                    _availableProjects.AddRange(_projectSvc.Projects.Select(p => new ProjectViewModel { Model = p }));
                 }
                 return _availableProjects;
             }
@@ -175,7 +181,7 @@ namespace Asana.Maui.ViewModels
         {
             get
             {
-                return Model == null ? string.Empty : Model.Priority.ToString();
+                return Model?.Priority.ToString() ?? string.Empty;
             }
             set
             {

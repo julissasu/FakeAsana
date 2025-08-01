@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Asana.Maui.ViewModels"
              x:Class="Asana.Maui.MainPage"
              NavigatedTo="ContentPage_NavigatedTo"
              NavigatedFrom="ContentPage_NavigatedFrom"
@@ -9,30 +10,29 @@
               <VerticalStackLayout
                      Padding="20"
                      Spacing="20">
+                     <!-- Main layout: Filter controls, Sort options, Task list, Action buttons -->
                      <Grid>
                             <Grid.RowDefinitions>
                                    <RowDefinition Height="Auto"/>
-                                   <!-- Tool Bar -->
-                                   <RowDefinition Height="*"/>
-                                   <!-- ToDo List -->
+                                   <!-- Filter controls -->
                                    <RowDefinition Height="Auto"/>
-                                   <!-- Button Bar -->
+                                   <!-- Sort options -->
+                                   <RowDefinition Height="*"/>
+                                   <!-- Task list -->
+                                   <RowDefinition Height="Auto"/>
+                                   <!-- Action buttons -->
                             </Grid.RowDefinitions>
 
-                            <!-- Tool Bar: Filter and Search -->
+                            <!-- Filter controls: Show completed checkbox and search -->
                             <Grid Grid.Row="0"
                                   RowSpacing="10"
                                   Padding="0,0,0,10">
                                    <Grid.ColumnDefinitions>
                                           <ColumnDefinition Width="2*"/>
-                                          <!-- Label -->
                                           <ColumnDefinition Width="Auto"/>
-                                          <!-- CheckBox -->
                                           <ColumnDefinition Width="5*"/>
-                                          <!-- Search Bar -->
                                    </Grid.ColumnDefinitions>
 
-                                   <!-- Toggle for showing completed ToDos-->
                                    <Label Grid.Column="0"
                                           Text="Show Completed Tasks:"
                                           VerticalOptions="Center"
@@ -42,20 +42,17 @@
                                              VerticalOptions="Center"
                                              Margin="10,0"/>
 
-                                   <!-- Search Bar and button -->
                                    <Grid Grid.Column="2">
                                           <Grid.ColumnDefinitions>
                                                  <ColumnDefinition Width="*"/>
                                                  <ColumnDefinition Width="Auto"/>
                                           </Grid.ColumnDefinitions>
 
-                                          <!-- Query input -->
                                           <Entry Grid.Column="0"
                                                  Text="{Binding Query}"
                                                  Placeholder="Search tasks..."
                                                  FontSize="14"/>
 
-                                          <!-- Search button -->
                                           <Button Grid.Column="1"
                                                   Text="Search"
                                                   Clicked="SearchClicked"
@@ -63,9 +60,26 @@
                                    </Grid>
                             </Grid>
 
-                            <!-- ToDo List-->
+                            <!-- Sort options -->
+                            <Grid Grid.Row="1"
+                                  Padding="0,0,0,10">
+                                   <Grid.ColumnDefinitions>
+                                          <ColumnDefinition Width="Auto"/>
+                                          <ColumnDefinition Width="*"/>
+                                   </Grid.ColumnDefinitions>
+                                   <Label Text="Sort By:"
+                                          Grid.Column="0"
+                                          VerticalOptions="Center"
+                                          FontSize="14"/>
+                                   <Picker Title="Select sort option..."
+                                           Grid.Column="1"
+                                           ItemsSource="{Binding SortOptionsList}"
+                                           SelectedItem="{Binding SelectedSortOption}"/>
+                            </Grid>
+
+                            <!-- Task list -->
                             <ListView
-                                   Grid.Row="1"
+                                   Grid.Row="2"
                                    ItemsSource="{Binding ToDos}"
                                    SelectedItem="{Binding SelectedToDo}"
                                    RowHeight="120"
@@ -73,26 +87,30 @@
                                    <ListView.ItemTemplate>
                                           <DataTemplate>
                                                  <ViewCell>
+                                                        <!-- Task item layout: Checkbox, Name, Description, Metadata -->
                                                         <Grid Padding="15,10"
                                                               RowSpacing="8">
                                                                <Grid.ColumnDefinitions>
                                                                       <ColumnDefinition Width="Auto"/>
+                                                                      <!-- Checkbox -->
                                                                       <ColumnDefinition Width="*"/>
+                                                                      <!-- Content -->
                                                                </Grid.ColumnDefinitions>
                                                                <Grid.RowDefinitions>
                                                                       <RowDefinition Height="Auto"/>
+                                                                      <!-- Name -->
                                                                       <RowDefinition Height="Auto"/>
+                                                                      <!-- Description -->
                                                                       <RowDefinition Height="Auto"/>
+                                                                      <!-- Metadata -->
                                                                </Grid.RowDefinitions>
 
-                                                               <!-- CheckBox for completion status -->
                                                                <CheckBox IsChecked="{Binding IsComplete}"
                                                                          Grid.Column="0"
                                                                          Grid.RowSpan="3"
                                                                          VerticalOptions="Center"
                                                                          Margin="0,0,15,0"/>
 
-                                                               <!-- ToDo name -->
                                                                <Label Grid.Column="1"
                                                                       Grid.Row="0"
                                                                       Text="{Binding Model.Name}"
@@ -100,7 +118,6 @@
                                                                       FontSize="16"
                                                                       TextColor="Red"/>
 
-                                                               <!-- ToDo description -->
                                                                <Label Grid.Column="1"
                                                                       Grid.Row="1"
                                                                       Text="{Binding Model.Description}"
@@ -108,7 +125,7 @@
                                                                       TextColor="Gray"
                                                                       Margin="0,5,0,5"/>
 
-                                                               <!-- Priority, Due Date, and Project -->
+                                                               <!-- Task metadata: Priority, Due date, Project -->
                                                                <StackLayout Grid.Column="1"
                                                                             Grid.Row="2"
                                                                             Orientation="Horizontal"
@@ -130,8 +147,8 @@
                                    </ListView.ItemTemplate>
                             </ListView>
 
-                            <!-- Button Bar -->
-                            <VerticalStackLayout Grid.Row="2"
+                            <!-- Action buttons -->
+                            <VerticalStackLayout Grid.Row="3"
                                                  Spacing="10"
                                                  Padding="0,20,0,0">
                                    <Button Text="Add New ToDo"

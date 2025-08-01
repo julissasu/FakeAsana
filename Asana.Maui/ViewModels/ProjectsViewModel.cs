@@ -6,6 +6,8 @@ namespace Asana.Maui.ViewModels
     public class ProjectViewModel : IEquatable<ProjectViewModel>
     {
         public Project? Model { get; set; } // The underlying Project model
+        private ToDoServiceProxy _toDoSvc = ToDoServiceProxy.Current;
+        private ProjectServiceProxy _projectSvc = ProjectServiceProxy.Current;
 
         // Display name for the project, used in UI
         public string DisplayName
@@ -25,7 +27,7 @@ namespace Asana.Maui.ViewModels
                 if (Model == null) return string.Empty;
 
                 // Get all ToDos for this project
-                var projectToDos = ToDoServiceProxy.Current.GetToDosByProject(Model.Id);
+                var projectToDos = _toDoSvc.GetToDosByProject(Model.Id);
                 var completedCount = projectToDos.Count(t => t.IsComplete); // Count completed tasks
                 var totalCount = projectToDos.Count;    // Count total tasks
 

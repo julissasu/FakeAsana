@@ -3,17 +3,36 @@ using Asana.Library.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Asana.Maui.ViewModels
 {
     public class MainPageViewModel : INotifyPropertyChanged
     {
         private ToDoServiceProxy _toDoSvc;
+        private ProjectServiceProxy _projectSvc;
+        private readonly ObservableCollection<string> _sortOptionsList;
+        private string _selectedSortOption;
+
 
         public MainPageViewModel()
         {
             _toDoSvc = ToDoServiceProxy.Current;
+            _projectSvc = ProjectServiceProxy.Current;
             Query = string.Empty;
+
+            _sortOptionsList = new ObservableCollection<string>
+            {
+                "None",
+                "Name",
+                "Priority",
+                "DueDate",
+                "Project",
+                "IsComplete"
+            };
+
+            _selectedSortOption = "None"; // Default to 'None'
 
             // Listen for ToDo completion changes
             ToDoDetailViewModel.TaskCompletionChanged += RefreshPage;
@@ -23,6 +42,7 @@ namespace Asana.Maui.ViewModels
         public ToDoDetailViewModel? SelectedToDo { get; set; }
 
         private string query = string.Empty;
+
 
         // Search query for filtering ToDos
         public string Query
@@ -37,26 +57,64 @@ namespace Asana.Maui.ViewModels
                 {
                     query = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ToDos)); // Refresh ToDos list when query changes
+                    RefreshPage();
                 }
             }
         }
 
-        // Filtered list of ToDos based on the search query and completion status
+        public ObservableCollection<string> SortOptionsList => _sortOptionsList;
+
+        public string SelectedSortOption
+        {
+            get => _selectedSortOption;
+            set
+            {
+                if (_selectedSortOption != value)
+                {
+                    _selectedSortOption = value;
+                    NotifyPropertyChanged();
+                    RefreshPage();
+                }
+            }
+        }
+
+        // Filtered and sorted lists of ToDos
         public ObservableCollection<ToDoDetailViewModel> ToDos
         {
             get
             {
                 var toDos = _toDoSvc.ToDos
-                    .Where(t => (t?.Name?.Contains(Query) ?? false) || (t?.Description?.Contains(Query) ?? false))
-                    .Select(t => new ToDoDetailViewModel(t));
+                    .Where(t => (t?.Name?.Contains(Query, StringComparison.OrdinalIgnoreCase) ?? false) || (t?.Description?.Contains(Query, StringComparison.OrdinalIgnoreCase) ?? false));
 
                 if (!IsShowCompleted)
                 {
-                    toDos = toDos.Where(t => !(t?.Model?.IsComplete ?? false));
+                    toDos = toDos.Where(t => !(t?.IsComplete ?? false));
                 }
 
-                return new ObservableCollection<ToDoDetailViewModel>(toDos);
+                // Apply sorting
+                switch (SelectedSortOption)
+                {
+                    case "Name":
+                        toDos = toDos.OrderBy(t => t.Name);
+                        break;
+                    case "Priority":
+                        toDos = toDos.OrderBy(t => t.Priority);
+                        break;
+                    case "DueDate":
+                        toDos = toDos.OrderBy(t => t.DueDate);
+                        break;
+                    case "Project":
+                        toDos = toDos.OrderBy(t => _projectSvc.GetProjectById(t.ProjectId)?.Name);
+                        break;
+                    case "IsComplete":
+                        toDos = toDos.OrderBy(t => t.IsComplete);
+                        break;
+                    default:
+                        // No sorting
+                        break;
+                }
+
+                return new ObservableCollection<ToDoDetailViewModel>(toDos.Select(t => new ToDoDetailViewModel(t)));
             }
         }
 
@@ -78,7 +136,7 @@ namespace Asana.Maui.ViewModels
                 {
                     isShowCompleted = value;
                     NotifyPropertyChanged();
-                    NotifyPropertyChanged(nameof(ToDos)); // Refresh list when toggle changes
+                    RefreshPage();
                 }
             }
         }
@@ -90,8 +148,8 @@ namespace Asana.Maui.ViewModels
             {
                 return;
             }
-            ToDoServiceProxy.Current.DeleteToDo(SelectedToDo.Model);
-            NotifyPropertyChanged(nameof(ToDos));
+            _toDoSvc.DeleteToDo(SelectedToDo.Model);
+            RefreshPage();
         }
 
         // Refresh the ToDos list
