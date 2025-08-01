@@ -10,7 +10,8 @@ namespace Asana
     {
         public static void Main(string[] args)
         {
-            var toDoSvc = ToDoServiceProxy.Current; // Singleton instance of service proxy
+            var toDoSvc = ToDoServiceProxy.Current; // Singleton instance of todo service proxy
+            var projectSvc = ProjectServiceProxy.Current; // Singleton instance of project service proxy
             int choiceInt; // User menu choice
 
             do
@@ -88,7 +89,7 @@ namespace Asana
                             // Optionally assign to a project if projects exist
                             if (newToDo != null)
                             {
-                                if (toDoSvc.Projects.Count > 0)
+                                if (projectSvc.Projects.Count > 0)
                                 {
                                     Console.Write("Assign to Project ID (or leave empty): ");
                                     var projInput = Console.ReadLine();
@@ -97,7 +98,7 @@ namespace Asana
                                         if (toDoSvc.AssignToDoToProject(newToDo.Id, projId))
                                         {
                                             // assign ToDo to project
-                                            var project = toDoSvc.GetProjectById(projId);
+                                            var project = projectSvc.GetProjectById(projId);
                                             Console.WriteLine($"ToDo assigned to project '{project?.Name}'.");
                                         }
                                         else
@@ -163,7 +164,7 @@ namespace Asana
 
                                     case "2":
                                         // Change project assignment
-                                        DisplayProjects(toDoSvc);
+                                        DisplayProjects(projectSvc);
                                         Console.Write("Enter Project ID to assign (or 0 to unassign): ");
                                         if (int.TryParse(Console.ReadLine(), out int newProjectId))
                                         {
@@ -258,7 +259,7 @@ namespace Asana
                             var projDescription = Console.ReadLine();
 
                             // Create the new Project object
-                            var newProject = toDoSvc.AddOrUpdateProject(new Project
+                            var newProject = projectSvc.AddOrUpdateProject(new Project
                             {
                                 Name = projName,
                                 Description = projDescription,
@@ -277,13 +278,13 @@ namespace Asana
 
                         case 6:
                             // Delete an existing Project
-                            DisplayProjects(toDoSvc);
+                            DisplayProjects(projectSvc);
                             Console.Write("Project ID to Delete: ");
                             var deleteProjChoice = int.Parse(Console.ReadLine() ?? "0");
-                            var projectToDelete = toDoSvc.GetProjectById(deleteProjChoice); // search for Project by ID
+                            var projectToDelete = projectSvc.GetProjectById(deleteProjChoice); // search for Project by ID
                             if (projectToDelete != null)
                             {
-                                toDoSvc.DeleteProject(projectToDelete);
+                                toDoSvc.DeleteProject(projectToDelete); // This is an important detail. ToDoService still needs to know to unassign todos.
                                 Console.WriteLine("Project deleted successfully.");
                             }
                             else
@@ -294,10 +295,10 @@ namespace Asana
 
                         case 7:
                             // Update an existing Project
-                            DisplayProjects(toDoSvc);
+                            DisplayProjects(projectSvc);
                             Console.Write("Project ID to Update: ");
                             var updateProjChoice = int.Parse(Console.ReadLine() ?? "0");
-                            var projectToUpdate = toDoSvc.GetProjectById(updateProjChoice); // search for Project by ID
+                            var projectToUpdate = projectSvc.GetProjectById(updateProjChoice); // search for Project by ID
 
                             // If project exists, prompt for updates
                             if (projectToUpdate != null)
@@ -312,7 +313,7 @@ namespace Asana
                                 if (!string.IsNullOrWhiteSpace(newProjDesc))
                                     projectToUpdate.Description = newProjDesc;
 
-                                toDoSvc.AddOrUpdateProject(projectToUpdate);
+                                projectSvc.AddOrUpdateProject(projectToUpdate);
                                 Console.WriteLine("Project updated successfully.");
                             }
                             else
@@ -323,12 +324,12 @@ namespace Asana
 
                         case 8:
                             // Display all Projects
-                            DisplayProjects(toDoSvc);
+                            DisplayProjects(projectSvc);
                             break;
 
                         case 9:
                             // Display ToDos filtered by a specific Project
-                            DisplayProjects(toDoSvc);
+                            DisplayProjects(projectSvc);
                             Console.Write("Enter Project ID to view its ToDos: ");
                             var viewProjChoice = int.Parse(Console.ReadLine() ?? "0");  // search for Project by ID
                             DisplayToDosByProject(toDoSvc, viewProjChoice);
@@ -370,7 +371,7 @@ namespace Asana
         }
 
         // Function to display all Projects
-        private static void DisplayProjects(ToDoServiceProxy service)
+        private static void DisplayProjects(ProjectServiceProxy service)
         {
             if (service.Projects.Count == 0)
             {
@@ -382,7 +383,7 @@ namespace Asana
             foreach (var project in service.Projects)
             {
                 // Calculate completion statistics for each project
-                var projectToDos = service.GetToDosByProject(project.Id);
+                var projectToDos = ToDoServiceProxy.Current.GetToDosByProject(project.Id);
                 var completedCount = projectToDos.Count(t => t.IsComplete);
                 var totalCount = projectToDos.Count;
                 var percentage = totalCount > 0 ? (completedCount * 100.0 / totalCount) : 0;
@@ -394,10 +395,11 @@ namespace Asana
         }
 
         // Function to display ToDos associated with a specific Project
-        private static void DisplayToDosByProject(ToDoServiceProxy service, int projectId)
+        private static void DisplayToDosByProject(ToDoServiceProxy toDoSvc, int projectId)
         {
+            var projectSvc = ProjectServiceProxy.Current;
             // Validate project exists
-            var project = service.GetProjectById(projectId);
+            var project = projectSvc.GetProjectById(projectId);
             if (project == null)
             {
                 Console.WriteLine("Project not found.");
@@ -405,7 +407,7 @@ namespace Asana
             }
 
             // Get all todos assigned to this project
-            var projectToDos = service.GetToDosByProject(projectId);
+            var projectToDos = toDoSvc.GetToDosByProject(projectId);
             if (projectToDos.Count == 0)
             {
                 Console.WriteLine($"No tasks found in project '{project.Name}'.");
