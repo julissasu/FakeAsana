@@ -1,5 +1,4 @@
 using Asana.Library.Models;
-using Asana.Library.Data;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,11 +6,35 @@ namespace Asana.Library.Services
 {
     public class ProjectServiceProxy
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private List<Project> _projectList;
 
         private ProjectServiceProxy()
         {
-            _fakeDatabase = new FakeDatabase();
+            // Initialize with some sample projects
+            _projectList = new List<Project>
+            {
+                new Project
+                {
+                    Id = 1,
+                    Name = "Website Redesign",
+                    Description = "Complete redesign of company website with modern UI/UX",
+                    CompletePercent = 75
+                },
+                new Project
+                {
+                    Id = 2,
+                    Name = "Mobile App Development",
+                    Description = "Develop cross-platform mobile application",
+                    CompletePercent = 30
+                },
+                new Project
+                {
+                    Id = 3,
+                    Name = "Database Migration",
+                    Description = "Migrate legacy database to new cloud infrastructure",
+                    CompletePercent = 100
+                }
+            };
         }
 
         private static ProjectServiceProxy? _instance;
@@ -31,7 +54,15 @@ namespace Asana.Library.Services
         {
             get
             {
-                return _fakeDatabase.GetProjects();
+                return _projectList.ToList();
+            }
+        }
+
+        private int nextProjectId
+        {
+            get
+            {
+                return _projectList.Any() ? _projectList.Max(p => p.Id) + 1 : 1;
             }
         }
 
@@ -39,19 +70,50 @@ namespace Asana.Library.Services
         {
             if (project == null) return null;
 
-            return _fakeDatabase.AddOrUpdateProject(project);
+            var isNew = project.Id == 0;
+
+            if (isNew)
+            {
+                project.Id = nextProjectId;
+                _projectList.Add(project);
+            }
+            else
+            {
+                var existingProject = _projectList.FirstOrDefault(p => p.Id == project.Id);
+                if (existingProject != null)
+                {
+                    var index = _projectList.IndexOf(existingProject);
+                    _projectList.RemoveAt(index);
+                    _projectList.Insert(index, project);
+                }
+            }
+
+            return project;
         }
 
         public Project? GetProjectById(int? id)
         {
             if (!id.HasValue || id.Value == 0) return null;
-            return _fakeDatabase.GetProjectById(id.Value);
+            return _projectList.FirstOrDefault(p => p.Id == id.Value);
         }
 
         public void DeleteProject(Project? project)
         {
             if (project == null) return;
-            _fakeDatabase.DeleteProject(project.Id);
+            var projectToDelete = _projectList.FirstOrDefault(p => p.Id == project.Id);
+            if (projectToDelete != null)
+            {
+                _projectList.Remove(projectToDelete);
+            }
+        }
+
+        public void DeleteProject(int projectId)
+        {
+            var projectToDelete = _projectList.FirstOrDefault(p => p.Id == projectId);
+            if (projectToDelete != null)
+            {
+                _projectList.Remove(projectToDelete);
+            }
         }
 
         /// <summary>
@@ -59,15 +121,28 @@ namespace Asana.Library.Services
         /// </summary>
         public List<Project> GetProjectsByCompletion(bool isComplete)
         {
-            return _fakeDatabase.GetProjectsByCompletion(isComplete);
+            return _projectList.Where(p => (p.CompletePercent == 100) == isComplete).ToList();
         }
 
         /// <summary>
-        /// Get project statistics from the fake database
+        /// Get project statistics
         /// </summary>
         public ProjectStatistics GetProjectStatistics()
         {
-            return _fakeDatabase.GetStatistics();
+            var totalProjects = _projectList.Count;
+            var completedProjects = _projectList.Count(p => p.CompletePercent == 100);
+            var inProgressProjects = _projectList.Count(p => p.CompletePercent > 0 && p.CompletePercent < 100);
+            var notStartedProjects = _projectList.Count(p => p.CompletePercent == 0);
+            var averageCompletion = _projectList.Any() ? _projectList.Average(p => p.CompletePercent) : 0;
+
+            return new ProjectStatistics
+            {
+                TotalProjects = totalProjects,
+                CompletedProjects = completedProjects,
+                InProgressProjects = inProgressProjects,
+                NotStartedProjects = notStartedProjects,
+                AverageCompletion = averageCompletion
+            };
         }
 
         /// <summary>
@@ -75,7 +150,20 @@ namespace Asana.Library.Services
         /// </summary>
         public double CalculateOverallProgress()
         {
-            return _fakeDatabase.CalculateOverallProgress();
+            if (!_projectList.Any()) return 0;
+            return _projectList.Average(p => p.CompletePercent);
         }
+    }
+
+    /// <summary>
+    /// Project statistics data structure
+    /// </summary>
+    public class ProjectStatistics
+    {
+        public int TotalProjects { get; set; }
+        public int CompletedProjects { get; set; }
+        public int InProgressProjects { get; set; }
+        public int NotStartedProjects { get; set; }
+        public double AverageCompletion { get; set; }
     }
 }

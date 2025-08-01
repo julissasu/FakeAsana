@@ -60,8 +60,7 @@ namespace Asana.API.Controllers
             {
                 return BadRequest("Failed to create todo.");
             }
-            
-            // Save to Filebase
+
             _persistenceService.SaveToDos();
 
             var todoDto = ToDoMapper.ToDto(createdToDo);
@@ -94,8 +93,7 @@ namespace Asana.API.Controllers
             {
                 return BadRequest("Failed to update todo.");
             }
-            
-            // Save to Filebase
+
             _persistenceService.SaveToDos();
 
             return Ok(ToDoMapper.ToDto(updatedToDo));
@@ -111,10 +109,9 @@ namespace Asana.API.Controllers
             }
 
             _todoService.DeleteToDo(id);
-            
-            // Save to Filebase
+
             _persistenceService.SaveToDos();
-            
+
             return NoContent();
         }
 
@@ -134,8 +131,7 @@ namespace Asana.API.Controllers
             {
                 return BadRequest("Failed to update todo.");
             }
-            
-            // Save to Filebase
+
             _persistenceService.SaveToDos();
 
             return Ok(ToDoMapper.ToDto(updatedToDo));

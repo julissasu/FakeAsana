@@ -1,5 +1,6 @@
 using Asana.API.DTOs;
 using Asana.API.Mappers;
+using Asana.API.Services;
 using Asana.Library.Models;
 using Asana.Library.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ namespace Asana.API.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly ProjectServiceProxy _projectService;
+        private readonly FilebasePersistenceService _persistenceService;
 
-        public ProjectsController()
+        public ProjectsController(FilebasePersistenceService persistenceService)
         {
             _projectService = ProjectServiceProxy.Current;
+            _persistenceService = persistenceService;
         }
 
         [HttpGet]
@@ -51,6 +54,8 @@ namespace Asana.API.Controllers
                 return BadRequest("Failed to create project.");
             }
 
+            _persistenceService.SaveProjects();
+
             var projectDto = ProjectMapper.ToDto(createdProject);
             return CreatedAtAction(nameof(GetProject), new { id = projectDto.Id }, projectDto);
         }
@@ -82,6 +87,8 @@ namespace Asana.API.Controllers
                 return BadRequest("Failed to update project.");
             }
 
+            _persistenceService.SaveProjects();
+
             return Ok(ProjectMapper.ToDto(updatedProject));
         }
 
@@ -95,6 +102,9 @@ namespace Asana.API.Controllers
             }
 
             _projectService.DeleteProject(project);
+
+            _persistenceService.SaveProjects();
+
             return NoContent();
         }
     }

@@ -25,7 +25,6 @@ namespace Asana.Maui.ViewModels
             _apiService = new ApiService();
             Query = string.Empty;
 
-            // Start loading data from API
             _ = LoadDataFromApiAsync();
 
             _sortOptionsList = new ObservableCollection<string>
@@ -38,19 +37,15 @@ namespace Asana.Maui.ViewModels
                 "IsComplete"
             };
 
-            _selectedSortOption = "None"; // Default to 'None'
+            _selectedSortOption = "None";
 
-            // Listen for ToDo completion changes
             ToDoDetailViewModel.TaskCompletionChanged += RefreshPage;
         }
 
-        // Currently selected ToDo item
         public ToDoDetailViewModel? SelectedToDo { get; set; }
 
         private string query = string.Empty;
 
-
-        // Search query for filtering ToDos
         public string Query
         {
             get

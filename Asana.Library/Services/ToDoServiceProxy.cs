@@ -31,7 +31,7 @@ namespace Asana.Library.Services
         private ToDoServiceProxy()
         {
             _projectSvc = ProjectServiceProxy.Current;
-            
+
             // Initialize with some sample data
             _toDoList = new List<ToDo>
             {

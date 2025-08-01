@@ -1,6 +1,5 @@
 ﻿using Asana.Library.Models;
 using Asana.Library.Services;
-using Asana.Library.Tests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +10,6 @@ namespace Asana
     {
         public static void Main(string[] args)
         {
-            // Run Filebase test first to demonstrate the new database system
-            Console.WriteLine("🔧 Testing Filebase Database System...");
-            FilebaseTest.TestFilebaseOperations();
-            Console.WriteLine("\n" + new string('=', 50));
-
             var toDoSvc = ToDoServiceProxy.Current; // Singleton instance of todo service proxy
             var projectSvc = ProjectServiceProxy.Current; // Singleton instance of project service proxy
             int choiceInt; // User menu choice
@@ -343,9 +337,8 @@ namespace Asana
                             break;
 
                         case 10:
-                            // Test Filebase Database System
-                            Console.WriteLine("\nRunning Filebase Database Test...");
-                            FilebaseTest.TestFilebaseOperations();
+                            Console.WriteLine("\nDatabase System: Using Filebase for persistent storage.");
+                            Console.WriteLine("All TODO and Project data is automatically saved to JSON files.");
                             break;
 
                         default:
