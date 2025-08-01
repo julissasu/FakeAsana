@@ -45,7 +45,7 @@ namespace Asana.API.Controllers
 
             var project = ProjectMapper.ToModel(dto);
             var createdProject = _projectService.AddOrUpdateProject(project);
-            
+
             if (createdProject == null)
             {
                 return BadRequest("Failed to create project.");
@@ -76,7 +76,7 @@ namespace Asana.API.Controllers
 
             var project = ProjectMapper.ToModel(dto);
             var updatedProject = _projectService.AddOrUpdateProject(project);
-            
+
             if (updatedProject == null)
             {
                 return BadRequest("Failed to update project.");

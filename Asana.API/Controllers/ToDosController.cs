@@ -52,7 +52,7 @@ namespace Asana.API.Controllers
 
             var todo = ToDoMapper.ToModel(dto);
             var createdToDo = _todoService.AddOrUpdateToDo(todo);
-            
+
             if (createdToDo == null)
             {
                 return BadRequest("Failed to create todo.");
@@ -83,7 +83,7 @@ namespace Asana.API.Controllers
 
             var todo = ToDoMapper.ToModel(dto);
             var updatedToDo = _todoService.AddOrUpdateToDo(todo);
-            
+
             if (updatedToDo == null)
             {
                 return BadRequest("Failed to update todo.");
@@ -116,7 +116,7 @@ namespace Asana.API.Controllers
 
             todo.IsComplete = !todo.IsComplete;
             var updatedToDo = _todoService.AddOrUpdateToDo(todo);
-            
+
             if (updatedToDo == null)
             {
                 return BadRequest("Failed to update todo.");

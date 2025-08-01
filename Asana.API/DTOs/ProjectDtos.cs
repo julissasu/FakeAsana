@@ -12,19 +12,19 @@ namespace Asana.API.DTOs
         /// </summary>
         /// <example>1</example>
         public int Id { get; set; }
-        
+
         /// <summary>
         /// Name of the project
         /// </summary>
         /// <example>Website Redesign</example>
         public string Name { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Description of the project
         /// </summary>
         /// <example>Complete redesign of the company website</example>
         public string Description { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Completion percentage (0-100)
         /// </summary>
@@ -44,7 +44,7 @@ namespace Asana.API.DTOs
         [Required(ErrorMessage = "Project name is required")]
         [StringLength(100, ErrorMessage = "Project name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Description of the project
         /// </summary>
@@ -64,7 +64,7 @@ namespace Asana.API.DTOs
         /// <example>1</example>
         [Required]
         public int Id { get; set; }
-        
+
         /// <summary>
         /// Name of the project
         /// </summary>
@@ -72,14 +72,14 @@ namespace Asana.API.DTOs
         [Required(ErrorMessage = "Project name is required")]
         [StringLength(100, ErrorMessage = "Project name cannot exceed 100 characters")]
         public string Name { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Description of the project
         /// </summary>
         /// <example>Complete redesign of the company website with new features</example>
         [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
         public string Description { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// Completion percentage (0-100)
         /// </summary>

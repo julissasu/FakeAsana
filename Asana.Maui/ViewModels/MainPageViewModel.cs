@@ -1,5 +1,6 @@
 using Asana.Library.Models;
 using Asana.Library.Services;
+using Asana.Maui.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -12,15 +13,20 @@ namespace Asana.Maui.ViewModels
     {
         private ToDoServiceProxy _toDoSvc;
         private ProjectServiceProxy _projectSvc;
+        private ApiService _apiService;
         private readonly ObservableCollection<string> _sortOptionsList;
         private string _selectedSortOption;
-
+        private bool _isLoading = false;
 
         public MainPageViewModel()
         {
             _toDoSvc = ToDoServiceProxy.Current;
             _projectSvc = ProjectServiceProxy.Current;
+            _apiService = new ApiService();
             Query = string.Empty;
+
+            // Start loading data from API
+            _ = LoadDataFromApiAsync();
 
             _sortOptionsList = new ObservableCollection<string>
             {
@@ -59,6 +65,72 @@ namespace Asana.Maui.ViewModels
                     NotifyPropertyChanged();
                     RefreshPage();
                 }
+            }
+        }
+
+        // Loading indicator
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                if (_isLoading != value)
+                {
+                    _isLoading = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        // Load data from API and sync to local services
+        private async Task LoadDataFromApiAsync()
+        {
+            try
+            {
+                IsLoading = true;
+
+                // Load projects from API
+                var apiProjects = await _apiService.GetProjectsAsync();
+
+                foreach (var projectDto in apiProjects)
+                {
+                    var project = new Project
+                    {
+                        Id = projectDto.Id,
+                        Name = projectDto.Name,
+                        Description = projectDto.Description,
+                        CompletePercent = projectDto.CompletePercent
+                    };
+                    _projectSvc.AddOrUpdateProject(project);
+                }
+
+                // Load todos from API
+                var apiTodos = await _apiService.GetToDosAsync();
+
+                foreach (var todoDto in apiTodos)
+                {
+                    var todo = new ToDo
+                    {
+                        Id = todoDto.Id,
+                        Name = todoDto.Name,
+                        Description = todoDto.Description,
+                        Priority = todoDto.Priority,
+                        IsComplete = todoDto.IsComplete,
+                        ProjectId = todoDto.ProjectId,
+                        DueDate = todoDto.DueDate
+                    };
+                    _toDoSvc.AddOrUpdateToDo(todo);
+                }
+
+                RefreshPage();
+            }
+            catch
+            {
+                // Silently fail and use local data
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
 
