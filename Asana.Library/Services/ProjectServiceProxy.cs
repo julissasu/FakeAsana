@@ -26,6 +26,7 @@ namespace Asana.Library.Services
             }
         }
 
+        // Get all projects
         public List<Project> Projects
         {
             get
@@ -34,6 +35,8 @@ namespace Asana.Library.Services
             }
         }
 
+
+        // Get next project ID
         private int nextProjectId
         {
             get
@@ -42,12 +45,14 @@ namespace Asana.Library.Services
             }
         }
 
+        // Add or update a project
         public Project? AddOrUpdateProject(Project? project)
         {
             if (project == null) return null;
 
             var isNew = project.Id == 0;
 
+            // If it's a new project, assign a new ID
             if (isNew)
             {
                 project.Id = nextProjectId;
@@ -58,26 +63,28 @@ namespace Asana.Library.Services
                 var existingProject = _projectList.FirstOrDefault(p => p.Id == project.Id);
                 if (existingProject != null)
                 {
+                    // Update existing project
                     var index = _projectList.IndexOf(existingProject);
                     _projectList.RemoveAt(index);
                     _projectList.Insert(index, project);
                 }
                 else
                 {
-                    // Project has an ID but doesn't exist in list (e.g., loaded from persistence)
-                    _projectList.Add(project);
+                    _projectList.Add(project); // Project has an ID but doesn't exist in list
                 }
             }
 
             return project;
         }
 
+        // Get project by ID
         public Project? GetProjectById(int? id)
         {
             if (!id.HasValue || id.Value == 0) return null;
             return _projectList.FirstOrDefault(p => p.Id == id.Value);
         }
 
+        // Delete project by reference
         public void DeleteProject(Project? project)
         {
             if (project == null) return;
@@ -88,6 +95,7 @@ namespace Asana.Library.Services
             }
         }
 
+        // Delete project by ID
         public void DeleteProject(int projectId)
         {
             var projectToDelete = _projectList.FirstOrDefault(p => p.Id == projectId);
@@ -97,17 +105,13 @@ namespace Asana.Library.Services
             }
         }
 
-        /// <summary>
-        /// Get projects by completion status
-        /// </summary>
+        // Get projects by completion status
         public List<Project> GetProjectsByCompletion(bool isComplete)
         {
             return _projectList.Where(p => (p.CompletePercent == 100) == isComplete).ToList();
         }
 
-        /// <summary>
-        /// Get project statistics
-        /// </summary>
+        // Get project statistics
         public ProjectStatistics GetProjectStatistics()
         {
             var totalProjects = _projectList.Count;
@@ -126,9 +130,6 @@ namespace Asana.Library.Services
             };
         }
 
-        /// <summary>
-        /// Calculate overall progress across all projects
-        /// </summary>
         public double CalculateOverallProgress()
         {
             if (!_projectList.Any()) return 0;
@@ -136,9 +137,7 @@ namespace Asana.Library.Services
         }
     }
 
-    /// <summary>
-    /// Project statistics data structure
-    /// </summary>
+    // Project statistics data structure
     public class ProjectStatistics
     {
         public int TotalProjects { get; set; }

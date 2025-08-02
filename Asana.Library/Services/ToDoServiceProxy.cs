@@ -47,6 +47,7 @@ namespace Asana.Library.Services
             }
         }
 
+        // Get ToDo by ID
         private int nextToDoId
         {
             get
@@ -55,6 +56,7 @@ namespace Asana.Library.Services
             }
         }
 
+        // Add or update a ToDo
         public ToDo? AddOrUpdate(ToDo? toDo)
         {
             if (toDo == null) return toDo;
@@ -107,7 +109,7 @@ namespace Asana.Library.Services
             }
         }
 
-        // Project-related methods are now wrappers for the new service
+        // Project-related methods
         public List<Project> Projects
         {
             get { return _projectSvc.Projects; }

@@ -8,8 +8,8 @@ namespace Asana.API.Database
 {
     public class Filebase
     {
-        private readonly string? _rootDirectory;
-        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly string? _rootDirectory; // Directory where JSON files are stored
+        private readonly JsonSerializerOptions _jsonOptions; // Options for JSON serialization
 
         public Filebase(string? rootDirectory = null)
         {
@@ -17,18 +17,19 @@ namespace Asana.API.Database
             {
                 if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                 {
-                    _rootDirectory = @"C:\temp";
+                    _rootDirectory = @"C:\temp"; // Default for Windows
                 }
                 else
                 {
-                    _rootDirectory = Path.Combine(Path.GetTempPath(), "Filebase");
+                    _rootDirectory = Path.Combine(Path.GetTempPath(), "Filebase"); // Default for Unix-like systems
                 }
             }
             else
             {
-                _rootDirectory = rootDirectory;
+                _rootDirectory = rootDirectory; // Use provided directory
             }
 
+            // Initialize JSON serialization options
             _jsonOptions = new JsonSerializerOptions
             {
                 WriteIndented = true,
@@ -41,13 +42,14 @@ namespace Asana.API.Database
             }
         }
 
+        // Save data to a JSON file asynchronously
         public async Task SaveAsync<T>(string tableName, T data)
         {
             try
             {
-                var filePath = GetFilePath(tableName);
-                var json = JsonSerializer.Serialize(data, _jsonOptions);
-                await Task.Run(() => File.WriteAllText(filePath, json));
+                var filePath = GetFilePath(tableName); // Get the full file path
+                var json = JsonSerializer.Serialize(data, _jsonOptions); // Serialize data to JSON
+                await Task.Run(() => File.WriteAllText(filePath, json)); // Write JSON to file
             }
             catch (Exception ex)
             {
@@ -55,6 +57,7 @@ namespace Asana.API.Database
             }
         }
 
+        // Save data to a JSON file synchronously
         public void Save<T>(string tableName, T data)
         {
             try
@@ -69,6 +72,7 @@ namespace Asana.API.Database
             }
         }
 
+        // Load data from a JSON file asynchronously
         public async Task<T?> LoadAsync<T>(string tableName) where T : class
         {
             try
@@ -86,7 +90,7 @@ namespace Asana.API.Database
                     return null;
                 }
 
-                return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+                return JsonSerializer.Deserialize<T>(json, _jsonOptions); // Deserialize JSON to object
             }
             catch (Exception ex)
             {
@@ -94,6 +98,7 @@ namespace Asana.API.Database
             }
         }
 
+        // Load data from a JSON file synchronously
         public T? Load<T>(string tableName) where T : class
         {
             try
@@ -111,7 +116,7 @@ namespace Asana.API.Database
                     return null;
                 }
 
-                return JsonSerializer.Deserialize<T>(json, _jsonOptions);
+                return JsonSerializer.Deserialize<T>(json, _jsonOptions); // Deserialize JSON to object
             }
             catch (Exception ex)
             {
@@ -119,6 +124,7 @@ namespace Asana.API.Database
             }
         }
 
+        // Delete a JSON file
         public void DeleteTable(string tableName)
         {
             try
@@ -135,12 +141,14 @@ namespace Asana.API.Database
             }
         }
 
+        // Check if a JSON file exists
         public bool TableExists(string tableName)
         {
             var filePath = GetFilePath(tableName);
             return File.Exists(filePath);
         }
 
+        // Get a list of all JSON files in the root directory
         public List<string> GetTableNames()
         {
             try
@@ -151,7 +159,7 @@ namespace Asana.API.Database
                     var files = Directory.GetFiles(_rootDirectory, "*.json");
                     foreach (var file in files)
                     {
-                        tableNames.Add(Path.GetFileNameWithoutExtension(file));
+                        tableNames.Add(Path.GetFileNameWithoutExtension(file)); // Add file name without extension to the list
                     }
                 }
                 return tableNames;
@@ -162,13 +170,14 @@ namespace Asana.API.Database
             }
         }
 
+        // Get the full file path for a given table name
         private string GetFilePath(string tableName)
         {
             if (string.IsNullOrEmpty(_rootDirectory))
             {
                 throw new FilebaseException("Root directory is not configured.");
             }
-            return Path.Combine(_rootDirectory, $"{tableName}.json");
+            return Path.Combine(_rootDirectory, $"{tableName}.json"); // Append .json extension to the table name
         }
 
         private void EnsureDirectoryExists(string directory)
@@ -180,8 +189,10 @@ namespace Asana.API.Database
         }
     }
 
+    // Custom exception for Filebase operations
     public class FilebaseException : Exception
     {
+        // Constructors
         public FilebaseException(string message) : base(message) { }
         public FilebaseException(string message, Exception innerException) : base(message, innerException) { }
     }

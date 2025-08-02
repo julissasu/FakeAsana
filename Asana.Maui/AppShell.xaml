@@ -7,6 +7,7 @@
     Shell.FlyoutBehavior="Disabled"
     Title="Asana.Maui">
 
+    <!-- Define routes for navigation -->
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"

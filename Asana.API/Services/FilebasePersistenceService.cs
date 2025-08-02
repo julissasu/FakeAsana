@@ -10,18 +10,21 @@ namespace Asana.API.Services
         private const string TODO_TABLE = "todos";
         private const string PROJECT_TABLE = "projects";
 
+        // Constructor to initialize the Filebase instance
         public FilebasePersistenceService(Filebase filebase)
         {
             _filebase = filebase;
             LoadDataFromFilebase();
         }
 
+        // Load data from Filebase into the application
         private void LoadDataFromFilebase()
         {
             LoadToDosFromFilebase();
             LoadProjectsFromFilebase();
         }
 
+        // Load ToDos from Filebase and update the ToDoService
         private void LoadToDosFromFilebase()
         {
             try
@@ -51,12 +54,13 @@ namespace Asana.API.Services
             }
         }
 
+        // Load Projects from Filebase and update the ProjectService
         private void LoadProjectsFromFilebase()
         {
             try
             {
                 var loadedProjects = _filebase.Load<List<Project>>(PROJECT_TABLE);
-                
+
                 if (loadedProjects != null && loadedProjects.Any())
                 {
                     var projectService = ProjectServiceProxy.Current;

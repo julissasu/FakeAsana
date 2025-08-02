@@ -11,8 +11,8 @@ namespace Asana.API.Controllers
     [Route("api/[controller]")]
     public class ToDosController : ControllerBase
     {
-        private readonly ToDoServiceProxy _todoService;
-        private readonly FilebasePersistenceService _persistenceService;
+        private readonly ToDoServiceProxy _todoService; // Singleton service for todo management
+        private readonly FilebasePersistenceService _persistenceService; // Service for persistence operations
 
         public ToDosController(FilebasePersistenceService persistenceService)
         {
@@ -20,13 +20,15 @@ namespace Asana.API.Controllers
             _persistenceService = persistenceService;
         }
 
+        // GET: api/todos
         [HttpGet]
         public ActionResult<IEnumerable<ToDoDto>> GetToDos()
         {
-            var todos = _todoService.ToDos.Select(ToDoMapper.ToDto);
+            var todos = _todoService.ToDos.Select(ToDoMapper.ToDto); // Convert todos to DTOs
             return Ok(todos);
         }
 
+        // GET: api/todos/{id}
         [HttpGet("{id}")]
         public ActionResult<ToDoDto> GetToDo(int id)
         {
@@ -35,16 +37,18 @@ namespace Asana.API.Controllers
             {
                 return NotFound();
             }
-            return Ok(ToDoMapper.ToDto(todo));
+            return Ok(ToDoMapper.ToDto(todo)); // Return the todo as a DTO
         }
 
+        // GET: api/todos/project/{projectId}
         [HttpGet("project/{projectId}")]
         public ActionResult<IEnumerable<ToDoDto>> GetToDosByProject(int projectId)
         {
-            var todos = _todoService.ToDos.Where(t => t.ProjectId == projectId).Select(ToDoMapper.ToDto);
-            return Ok(todos);
+            var todos = _todoService.ToDos.Where(t => t.ProjectId == projectId).Select(ToDoMapper.ToDto); // Filter todos by project ID
+            return Ok(todos); // Return todos associated with the specified project
         }
 
+        // POST: api/todos
         [HttpPost]
         public ActionResult<ToDoDto> CreateToDo(CreateToDoDto dto)
         {
@@ -53,23 +57,25 @@ namespace Asana.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var todo = ToDoMapper.ToModel(dto);
-            var createdToDo = _todoService.AddOrUpdateToDo(todo);
+            var todo = ToDoMapper.ToModel(dto); // Map DTO to model
+            var createdToDo = _todoService.AddOrUpdateToDo(todo); // Add or update the todo
 
             if (createdToDo == null)
             {
                 return BadRequest("Failed to create todo.");
             }
 
-            _persistenceService.SaveToDos();
+            _persistenceService.SaveToDos(); // Persist the changes
 
             var todoDto = ToDoMapper.ToDto(createdToDo);
-            return CreatedAtAction(nameof(GetToDo), new { id = todoDto.Id }, todoDto);
+            return CreatedAtAction(nameof(GetToDo), new { id = todoDto.Id }, todoDto); // Return the created todo as a DTO
         }
 
+        // PUT: api/todos/{id}
         [HttpPut("{id}")]
         public ActionResult<ToDoDto> UpdateToDo(int id, UpdateToDoDto dto)
         {
+            // Validate the incoming DTO
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -86,19 +92,20 @@ namespace Asana.API.Controllers
                 return NotFound();
             }
 
-            var todo = ToDoMapper.ToModel(dto);
-            var updatedToDo = _todoService.AddOrUpdateToDo(todo);
+            var todo = ToDoMapper.ToModel(dto); // Map DTO to model
+            var updatedToDo = _todoService.AddOrUpdateToDo(todo); // Update the todo
 
             if (updatedToDo == null)
             {
                 return BadRequest("Failed to update todo.");
             }
 
-            _persistenceService.SaveToDos();
+            _persistenceService.SaveToDos(); // Persist the changes
 
-            return Ok(ToDoMapper.ToDto(updatedToDo));
+            return Ok(ToDoMapper.ToDto(updatedToDo)); // Return the updated todo as a DTO
         }
 
+        // DELETE: api/todos/{id}
         [HttpDelete("{id}")]
         public IActionResult DeleteToDo(int id)
         {
@@ -108,13 +115,14 @@ namespace Asana.API.Controllers
                 return NotFound();
             }
 
-            _todoService.DeleteToDo(id);
+            _todoService.DeleteToDo(id); // Delete the todo by ID
 
-            _persistenceService.SaveToDos();
+            _persistenceService.SaveToDos(); // Persist the changes
 
-            return NoContent();
+            return NoContent(); // Return 204 No Content on successful deletion
         }
 
+        // PATCH: api/todos/{id}/complete
         [HttpPatch("{id}/complete")]
         public ActionResult<ToDoDto> ToggleComplete(int id)
         {
@@ -124,17 +132,17 @@ namespace Asana.API.Controllers
                 return NotFound();
             }
 
-            todo.IsComplete = !todo.IsComplete;
-            var updatedToDo = _todoService.AddOrUpdateToDo(todo);
+            todo.IsComplete = !todo.IsComplete; // Toggle the completion status
+            var updatedToDo = _todoService.AddOrUpdateToDo(todo); // Update the todo
 
             if (updatedToDo == null)
             {
                 return BadRequest("Failed to update todo.");
             }
 
-            _persistenceService.SaveToDos();
+            _persistenceService.SaveToDos(); // Persist the changes
 
-            return Ok(ToDoMapper.ToDto(updatedToDo));
+            return Ok(ToDoMapper.ToDto(updatedToDo)); // Return the updated todo as a DTO
         }
     }
 }
